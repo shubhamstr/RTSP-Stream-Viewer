@@ -60,7 +60,10 @@ In a third terminal window:
 cd client
 npm install
 
-# Verify .env matches server URL (defaults to http://localhost:4000)
+# Copy environment template if .env does not exist
+copy .env.example .env    # Windows PowerShell: Copy-Item .env.example .env
+cp .env.example .env      # Linux/macOS
+
 npm run dev
 ```
 - Web Application opens at: `http://localhost:5173`

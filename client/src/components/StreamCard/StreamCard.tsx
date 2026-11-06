@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite'
 import { appStore } from '../../store/AppStore'
 import { PlusCircleIcon, TrashIcon } from '../../icons/icons'
 import type { Stream } from '../../types'
+import { sanitizeStreamUrl } from '../../utils/url'
 
 interface StreamCardProps {
   stream: Stream
@@ -53,8 +54,8 @@ const StreamCard = observer(({ stream }: StreamCardProps) => {
       <div className="stream-card-top">
         <div className="stream-card-info">
           <span className="stream-name">{stream.name}</span>
-          <span className="stream-url" title={stream.url}>
-            {stream.url}
+          <span className="stream-url" title={sanitizeStreamUrl(stream.url)}>
+            {sanitizeStreamUrl(stream.url)}
           </span>
           {stream.error && (
             <span className="stream-card-error-hint" title={stream.error}>

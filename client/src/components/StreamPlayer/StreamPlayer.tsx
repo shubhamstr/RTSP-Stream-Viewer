@@ -12,6 +12,7 @@ import {
 } from '../../icons/icons'
 import type { Stream, StreamStatus } from '../../types'
 import getSocket from '../../services/socketService'
+import { sanitizeStreamUrl } from '../../utils/url'
 
 interface StreamPlayerProps {
   stream: Stream
@@ -165,7 +166,10 @@ const StreamPlayer = observer(({ stream }: StreamPlayerProps) => {
   const handlePiP = async () => {
     try {
       if (canvasRef.current && 'captureStream' in canvasRef.current) {
-        const streamMedia = (canvasRef.current as any).captureStream()
+        const canvasWithStream = canvasRef.current as HTMLCanvasElement & {
+          captureStream(fps?: number): MediaStream
+        }
+        const streamMedia = canvasWithStream.captureStream()
         const video = document.createElement('video')
         video.srcObject = streamMedia
         video.muted = true
@@ -181,14 +185,16 @@ const StreamPlayer = observer(({ stream }: StreamPlayerProps) => {
     }
   }
 
+  const safeUrl = sanitizeStreamUrl(stream.url)
+
   return (
     <div className="player" ref={containerRef}>
       {/* Header */}
       <div className="player-header">
         <div className="player-meta">
           <span className="player-name">{stream.name}</span>
-          <span className="player-desc" title={stream.url}>
-            {stream.url}
+          <span className="player-desc" title={safeUrl}>
+            {safeUrl}
           </span>
         </div>
 

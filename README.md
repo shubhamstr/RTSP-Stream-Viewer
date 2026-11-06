@@ -86,7 +86,7 @@ RTSP-Video-Stream-Viewer/
 ## ✨ Features
 
 - ⚡ **Express + Socket.IO Backend**: Clean modular architecture with health status checks, stream route placeholders, and real-time Socket.IO connection management.
-- 🎬 **Custom RTSP Stream Generator**: Docker Compose setup featuring MediaMTX and 3 synthetic live video feeds (Big Buck Bunny, Elephants Dream, Tears of Steel) looping continuously.
+- 🎬 **Custom RTSP Stream Generator**: Docker Compose setup featuring MediaMTX and 3 synthetic live video feeds (Earth, Road & Trees, Watering Plant) looping continuously from pre-bundled video assets.
 - 🌐 **HLS & RTSP Support**: MediaMTX provides both native RTSP (`rtsp://localhost:8554/...`) and browser-friendly HLS (`http://localhost:8888/.../index.m3u8`).
 - 🔗 **Stream Management UI**: Add custom RTSP or HLS stream URLs with names via a clean modal interface.
 - 🗂️ **Sidebar Filters**: Easily toggle between **Active** and **All** registered streams.
@@ -118,35 +118,35 @@ Ensure you have the following installed on your machine:
 - [Node.js](https://nodejs.org/) (`>= 18.x`)
 - [npm](https://www.npmjs.com/) (`>= 9.x`)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) *(recommended, to run the test RTSP video streamer)*
-- [FFmpeg](https://ffmpeg.org/download.html) *(required for local stream transcoding and inspection)*
+- [FFmpeg](https://ffmpeg.org/download.html) *(recommended for local stream transcoding and inspection; the backend also includes bundled `ffmpeg-static` as an automatic fallback)*
 
 ---
 
-### 📦 Installing FFmpeg on Windows (Recommended via Winget)
+### 📦 Installing FFmpeg
 
-For local development and stream handling on Windows, installing FFmpeg via **Winget** is the simplest method—it automatically configures environment PATH variables and works seamlessly across PowerShell, Command Prompt, and Git Bash.
-
-#### Step 1: Open PowerShell
-Press <kbd>Win</kbd> + <kbd>X</kbd> and select **Terminal** or **PowerShell**. Verify Winget is present:
+#### Windows (Recommended via Winget or Chocolatey)
 ```powershell
-winget --version
-```
-
-#### Step 2: Install FFmpeg
-Run the official Gyan build package:
-```powershell
+# Using Windows Package Manager (Winget)
 winget install -e --id Gyan.FFmpeg
+
+# Or using Chocolatey
+choco install ffmpeg
 ```
 
-#### Step 3: Restart Terminal & Verify Installation
-Close and reopen your terminal session, then verify:
-```powershell
+#### macOS (via Homebrew)
+```bash
+brew install ffmpeg
+```
+
+#### Linux (Debian / Ubuntu)
+```bash
+sudo apt update && sudo apt install -y ffmpeg
+```
+
+#### Verification
+Verify the installation by running:
+```bash
 ffmpeg -version
-```
-
-#### Step 4: Verify Additional Utilities
-Verify the bundled inspection and playback tools:
-```powershell
 ffprobe -version
 ffplay -version
 ```
@@ -161,7 +161,7 @@ ffplay -version
 
 ## 🚀 Getting Started
 
-Follow the steps below to run the complete environment locally.
+Follow the steps below to run the complete environment locally from scratch.
 
 ### 1. Clone the Repository
 
@@ -174,9 +174,9 @@ cd RTSP-Video-Stream-Viewer
 
 ### 2. Start the Test RTSP Video Streamer *(Optional but Recommended)*
 
-Spin up the local MediaMTX RTSP relay and the 3 live FFmpeg video publishers:
+Spin up the local MediaMTX RTSP relay and the 3 live FFmpeg video publishers (Earth, Road & Trees, and Watering Plant):
 
-**Windows:**
+**Windows (CMD or PowerShell):**
 ```bat
 cd custom-video-streamer
 scripts\start.bat
@@ -195,61 +195,85 @@ cd custom-video-streamer
 docker compose up -d
 ```
 
-> **Note:** On the initial run, Docker will download the sample MP4s and start publishing them as infinite RTSP loops to MediaMTX.
+> **Note:** The 3 looping test videos (`earth.mp4`, `road_and_trees.mp4`, `watering_plant.mp4`) are already pre-packaged in `custom-video-streamer/videos/`. MediaMTX and FFmpeg publishers will start broadcasting immediately.
 
 ---
 
 ### 3. Start the Backend Server
 
-Open a new terminal:
+Open a new terminal window:
 
 ```bash
 cd server
 
-# Install dependencies
+# 1. Install dependencies
 npm install
 
-# Configure environment variables
-# Copy .env.example to .env
-cp .env.example .env     # On Linux/macOS
-copy .env.example .env   # On Windows PowerShell: Copy-Item .env.example .env
+# 2. Configure environment variables (copy template)
+# On Linux / macOS:
+cp .env.example .env
 
-# Run server with hot-reload
+# On Windows (Command Prompt):
+copy .env.example .env
+
+# On Windows (PowerShell):
+Copy-Item .env.example .env
+
+# 3. Run server in development mode (hot-reloading)
 npm run dev
 ```
 
-- The server will start at: **http://localhost:4000**
+- REST API server: **http://localhost:4000**
 - Health endpoint: **http://localhost:4000/api/health**
-- Socket.IO server: listening on **ws://localhost:4000**
+- Socket.IO server: **ws://localhost:4000**
 
 ---
 
 ### 4. Start the Frontend Client
 
-Open another terminal:
+Open another terminal window:
 
 ```bash
 cd client
 
-# Install dependencies
+# 1. Install dependencies
 npm install
 
-# Run Vite development server
+# 2. Configure environment variables (copy template)
+# On Linux / macOS:
+cp .env.example .env
+
+# On Windows (Command Prompt):
+copy .env.example .env
+
+# On Windows (PowerShell):
+Copy-Item .env.example .env
+
+# 3. Run Vite development server
 npm run dev
 ```
 
-- The web UI will open at: **http://localhost:5173**
+- The client web UI will open at: **http://localhost:5173**
+- Connect to demo streams directly via the **"Default Options"** column in the **"Add RTSP Stream"** modal dialog.
 
 ---
 
 ## 🔧 Environment Variables
 
-### Server (`server/.env`)
+### Backend Server (`server/.env`)
 
 | Variable | Default Value | Description |
 |---|---|---|
 | `PORT` | `4000` | Port on which the Express and Socket.IO server listens |
 | `CLIENT_ORIGIN` | `http://localhost:5173` | Allowed frontend origin for CORS policies |
+| `FFMPEG_PATH` | *(unset)* | Path to custom FFmpeg binary (optional fallback) |
+
+### Frontend Client (`client/.env`)
+
+| Variable | Default Value | Description |
+|---|---|---|
+| `VITE_API_URL` | `http://localhost:4000` | Backend REST API base URL |
+| `VITE_WS_URL` | `ws://localhost:4000` | Backend WebSocket connection string |
 
 ---
 
@@ -257,21 +281,39 @@ npm run dev
 
 ### REST Endpoints
 
+All REST routes are prefixed with `/api` and return standardized JSON responses:
+
 | Method | Endpoint | Description | Sample Response |
 |---|---|---|---|
-| `GET` | `/` | API status check | `{ "name": "RTSP Video Stream Viewer API", "version": "1.0.0", "status": "running" }` |
-| `GET` | `/api/health` | Health and uptime | `{ "status": "ok", "uptime": 12.34, "timestamp": "2026-11-06T..." }` |
-| `GET` | `/api/streams` | Streams endpoint | `{ "message": "Streams endpoint ready", "streams": [] }` |
+| `GET` | `/` | API status check & stream metrics | `{ "name": "RTSP Video Stream Viewer API", "version": "1.0.0", "status": "running", "activeStreams": 1, "totalStreams": 3 }` |
+| `GET` | `/api/health` | Health and server uptime | `{ "status": "ok", "uptime": 12.34, "timestamp": "2026-11-06T..." }` |
+| `GET` | `/api/streams` | Fetch all registered streams | `{ "success": true, "streams": [...], "count": 3 }` |
+| `GET` | `/api/streams/:id` | Fetch details of a single stream | `{ "success": true, "stream": { "id": "1", "name": "Earth", ... } }` |
+| `POST` | `/api/streams` | Register a new RTSP/HTTP stream | `{ "success": true, "message": "Stream added successfully", "stream": {...} }` |
+| `POST` | `/api/streams/:id/start` | Start live FFmpeg transcode & pipe | `{ "success": true, "message": "Stream 1 started", "stream": {...} }` |
+| `POST` | `/api/streams/:id/stop` | Stop streaming and terminate FFmpeg | `{ "success": true, "message": "Stream 1 stopped", "stream": {...} }` |
+| `PATCH` | `/api/streams/:id` | Update stream metadata or active state | `{ "success": true, "message": "Stream updated successfully", "stream": {...} }` |
+| `DELETE` | `/api/streams/:id` | Remove a stream from the server | `{ "success": true, "message": "Stream 1 removed", "id": "1" }` |
 
 ### Socket.IO Events
 
-The backend exposes a Socket.IO server on `ws://localhost:4000` (or `http://localhost:4000/socket.io/`).
+The backend exposes a Socket.IO WebSocket server on `ws://localhost:4000` (path `/socket.io/`):
 
 | Event Name | Direction | Payload | Description |
 |---|---|---|---|
 | `connection` | Server | Socket instance | Triggered when a frontend client connects |
-| `ping` | Client → Server | none / optional payload | Client health check request |
-| `pong` | Server → Client | `{ timestamp: number }` | Server response to ping |
+| `ping` | Client → Server | none | Client heartbeat / health ping |
+| `pong` | Server → Client | `{ timestamp: number }` | Server heartbeat response |
+| `stream:get_all` | Client → Server | none | Request snapshot of all streams |
+| `stream:list` | Server → Client | `StreamItem[]` | Broadcast array of registered streams |
+| `stream:join` | Client → Server | `{ streamId: string }` | Subscribe socket to room `stream:${id}` |
+| `stream:leave` | Client → Server | `{ streamId: string }` | Unsubscribe socket from room `stream:${id}` |
+| `stream:start` | Client → Server | `{ streamId: string }` | Request server to start transcoding feed |
+| `stream:stop` | Client → Server | `{ streamId: string }` | Request server to stop transcoding feed |
+| `stream:frame` | Server → Client | `{ streamId, frame: Buffer, timestamp }` | High-frequency binary Motion JPEG frame (20 FPS) |
+| `stream:status` | Server → Client | `{ streamId, status, error?, active?, displayed? }` | Stream status change notification |
+| `stream:error` | Server → Client | `{ streamId, error: string }` | Stream failure or FFmpeg crash notification |
+| `stream:item_updated` | Server → Client | `StreamItem` | Broadcast stream configuration update |
 | `disconnect` | Server | Reason string | Triggered when client disconnects |
 
 ---
@@ -314,13 +356,19 @@ The client application utilizes a central **MobX observable singleton** (`AppSto
 | `dark` | `boolean` | Current active theme (dark/light) |
 | `tab` | `Tab` (`'active'` \| `'all'`) | Active filter in the sidebar |
 | `modalOpen` | `boolean` | Visibility toggle for the "Add Stream" dialog |
+| `editingStream` | `Stream \| null` | Stream currently being edited in the modal |
+| `errorMessage` | `string \| null` | Global error notification message |
 | `streams` | `Stream[]` | Array of registered stream objects |
 | `listedStreams` | *Getter* | Returns streams filtered by active tab |
 | `displayedStreams` | *Getter* | Returns active and currently displayed streams for the grid |
 | `addStream(name, url)` | *Action* | Adds a new stream and closes the modal |
+| `updateStream(id, payload)` | *Action* | Updates an existing stream's configuration |
+| `selectStream(id)` | *Action* | Toggles stream visibility and live playback |
+| `activateStream(id)` | *Action* | Sets stream active/displayed and begins playback |
 | `deactivateStream(id)` | *Action* | Sets stream active/displayed status to `false` |
 | `hideStream(id)` | *Action* | Hides stream from the active view grid |
-| `deleteStream(id)` | *Action* | Removes a stream from the store entirely |
+| `deleteStream(id)` | *Action* | Removes a stream from the store and backend |
+| `clearErrorMessage()` | *Action* | Clears global error banner |
 
 ---
 
@@ -332,7 +380,8 @@ The client application utilizes a central **MobX observable singleton** (`AppSto
 | CORS policy error in browser | Origin mismatch | Verify `CLIENT_ORIGIN=http://localhost:5173` in `server/.env`. |
 | Port 4000 or 8554 already in use | Conflicting service | Change `PORT` in `server/.env` or ports in `custom-video-streamer/docker-compose.yml`. |
 | RTSP stream not opening | Test stream containers not running | Run `docker compose ps` inside `custom-video-streamer/` or start using `scripts/start.bat`. |
-| Docker pull or MP4 download fails | Network/proxy issue | Ensure Docker Desktop has internet access to pull images and fetch sample clips. |
+| Docker pull fails | Network/proxy issue | Ensure Docker Desktop has internet access to pull images. |
+| Stream shows authentication error | Incorrect credentials | Verify credentials `viewer:viewer_password_123` are provided in the RTSP URL or modal fields. |
 
 ---
 
@@ -341,13 +390,15 @@ The client application utilizes a central **MobX observable singleton** (`AppSto
 - [x] **Component-based Layout**: Topbar, Sidebar, Responsive Main Grid, Add Stream Modal
 - [x] **MobX State Store**: Observable reactive state management for streams, filters, and theme
 - [x] **Theme Toggle**: Dark / Light theme support
-- [x] **Express Backend**: Initial TypeScript server setup with CORS and Dotenv
-- [x] **Socket.IO Integration**: WebSocket server initialization with heartbeat / ping-pong support
+- [x] **Express Backend**: Modular TypeScript REST server setup with health checks and stream CRUD
+- [x] **Socket.IO Integration**: Room-scoped WebSockets for high-frequency video frames and status sync
 - [x] **Dockerized RTSP Stream Generator**: MediaMTX + FFmpeg stack for 3 synthetic video feeds
-- [ ] **Stream Synchronization**: Sync streams between client and backend over Socket.IO / REST
-- [ ] **Live RTSP Relay Player**: Transcode RTSP directly to low-latency HLS/WebSockets for in-browser playback
+- [x] **Stream Synchronization**: Real-time two-way synchronization between client and backend
+- [x] **Live RTSP Relay Player**: Transcodes RTSP to Motion JPEG frames over WebSockets decoded on HTML5 Canvas (20 FPS)
+- [x] **Security & Credential Sanitization**: Password masking in UI headers, cards, tooltips, and server logs
+- [x] **Comprehensive Error Handling**: Centralized error middleware on backend, global alert banners, and per-player reconnect
 - [ ] **Stream Recording**: Record streams on demand to server disk storage
-- [ ] **Authentication**: Support basic/digest auth for secure RTSP camera endpoints
+- [ ] **WebRTC Low Latency**: Optional WebRTC playback pipeline for sub-second latency
 
 ---
 

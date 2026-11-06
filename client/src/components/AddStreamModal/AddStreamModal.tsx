@@ -2,33 +2,13 @@ import { useEffect, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import { appStore } from '../../store/AppStore'
 import { CheckIcon, CloseIcon, PlusCircleIcon } from '../../icons/icons'
-
-export interface DefaultStreamOption {
-  name: string
-  url: string
-  tag: string
-}
-
-export const DEFAULT_STREAMS: DefaultStreamOption[] = [
-  {
-    name: 'Earth (MediaMTX)',
-    url: 'rtsp://viewer:viewer_password_123@localhost:8554/earth',
-    tag: 'MediaMTX RTSP',
-  },
-  {
-    name: 'Road & Trees (MediaMTX)',
-    url: 'rtsp://viewer:viewer_password_123@localhost:8554/road_and_trees',
-    tag: 'MediaMTX RTSP',
-  },
-  {
-    name: 'Watering Plant (MediaMTX)',
-    url: 'rtsp://viewer:viewer_password_123@localhost:8554/watering_plant',
-    tag: 'MediaMTX RTSP',
-  },
-]
+import { DEFAULT_STREAMS, type DefaultStreamOption } from '../../constants/presets'
+import { extractErrorMessage } from '../../utils/error'
+import { sanitizeStreamUrl } from '../../utils/url'
 
 const AddStreamModal = observer(() => {
-  const isEditing = Boolean(appStore.editingStream)
+  const editingStream = appStore.editingStream
+  const isEditing = Boolean(editingStream)
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
   const [username, setUsername] = useState('')
@@ -38,16 +18,15 @@ const AddStreamModal = observer(() => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (appStore.editingStream) {
-      const s = appStore.editingStream
-      setName(s.name)
-      const credMatch = s.url.match(/^([a-zA-Z0-9+.-]+:\/\/)([^:]+):([^@]+)@(.*)$/)
+    if (editingStream) {
+      setName(editingStream.name)
+      const credMatch = editingStream.url.match(/^([a-zA-Z0-9+.-]+:\/\/)([^:]+):([^@]+)@(.*)$/)
       if (credMatch) {
         setUrl(`${credMatch[1]}${credMatch[4]}`)
         setUsername(decodeURIComponent(credMatch[2]))
         setPassword(decodeURIComponent(credMatch[3]))
       } else {
-        setUrl(s.url)
+        setUrl(editingStream.url)
         setUsername('')
         setPassword('')
       }
@@ -59,7 +38,7 @@ const AddStreamModal = observer(() => {
       setPassword('')
       setError(null)
     }
-  }, [appStore.editingStream])
+  }, [editingStream])
 
   const isStreamInList = (streamUrl: string) => {
     const target = streamUrl.trim().toLowerCase()
@@ -79,9 +58,7 @@ const AddStreamModal = observer(() => {
     try {
       await appStore.addStream(preset.name, preset.url)
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { message?: string } }; message?: string }
-      const msg = axiosErr.response?.data?.message || axiosErr.message || 'Failed to add stream'
-      setError(msg)
+      setError(extractErrorMessage(err, 'Failed to add stream'))
     } finally {
       setAddingUrl(null)
     }
@@ -102,9 +79,7 @@ const AddStreamModal = observer(() => {
       }
       appStore.closeModal()
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { message?: string } }; message?: string }
-      const msg = axiosErr.response?.data?.message || axiosErr.message || 'Failed to add default streams'
-      setError(msg)
+      setError(extractErrorMessage(err, 'Failed to add default streams'))
     } finally {
       setLoading(false)
     }
@@ -175,12 +150,12 @@ const AddStreamModal = observer(() => {
         await appStore.addStream(name.trim(), finalUrl)
       }
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { message?: string } }; message?: string }
-      const msg =
-        axiosErr.response?.data?.message ||
-        axiosErr.message ||
-        (isEditing ? 'Failed to update stream' : 'Failed to connect to stream')
-      setError(msg)
+      setError(
+        extractErrorMessage(
+          err,
+          isEditing ? 'Failed to update stream' : 'Failed to connect to stream'
+        )
+      )
     } finally {
       setLoading(false)
     }
@@ -262,8 +237,8 @@ const AddStreamModal = observer(() => {
                         </span>
                         <span className="default-stream-badge">{preset.tag}</span>
                       </div>
-                      <span className="default-stream-url" title={preset.url}>
-                        {preset.url}
+                      <span className="default-stream-url" title={sanitizeStreamUrl(preset.url)}>
+                        {sanitizeStreamUrl(preset.url)}
                       </span>
                     </div>
 

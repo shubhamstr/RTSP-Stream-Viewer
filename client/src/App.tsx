@@ -7,11 +7,28 @@ import AddStreamModal from './components/AddStreamModal/AddStreamModal'
 import './App.css'
 
 const App = observer(() => {
-  const { dark, modalOpen } = appStore
+  const { dark, modalOpen, errorMessage, clearErrorMessage } = appStore
 
   return (
     <div className={`app ${dark ? 'dark' : 'light'}`}>
       <Topbar />
+
+      {errorMessage && (
+        <div className="global-error-banner" role="alert">
+          <div className="global-error-content">
+            <span aria-hidden="true">⚠️</span>
+            <span className="global-error-text">{errorMessage}</span>
+          </div>
+          <button
+            type="button"
+            className="global-error-close"
+            onClick={() => clearErrorMessage()}
+            aria-label="Dismiss error"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className="layout">
         <Sidebar />

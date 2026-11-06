@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx'
 import type { Stream, StreamStatus, Tab } from '../types'
 import apiHandler from '../services/apiHandler'
 import getSocket from '../services/socketService'
+import { extractErrorMessage } from '../utils/error'
 
 class AppStore {
   // ── Theme ─────────────────────────────────────────────────────────────────
@@ -91,6 +92,10 @@ class AppStore {
     this.editingStream = null
   }
 
+  clearErrorMessage() {
+    this.errorMessage = null
+  }
+
   // ── Streams API Actions ───────────────────────────────────────────────────
   async fetchStreams() {
     this.isLoading = true
@@ -101,11 +106,16 @@ class AppStore {
           this.streams = serverStreams
         }
         this.isLoading = false
+        this.errorMessage = null
       })
     } catch (err: unknown) {
       console.error('[AppStore] Failed to fetch streams from backend:', err)
       runInAction(() => {
         this.isLoading = false
+        this.errorMessage = extractErrorMessage(
+          err,
+          'Failed to connect to backend server. Ensure server is running on http://localhost:4000'
+        )
       })
     }
   }
@@ -115,7 +125,9 @@ class AppStore {
    * Calls the backend API and updates the local store.
    */
   async addStream(name: string, url: string, closeModal = true) {
-    this.errorMessage = null
+    runInAction(() => {
+      this.errorMessage = null
+    })
     try {
       const createdStream = await apiHandler.createStream({
         name,
@@ -134,7 +146,7 @@ class AppStore {
       })
       return createdStream
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to add stream'
+      const msg = extractErrorMessage(err, 'Failed to add stream')
       console.error('[AppStore] addStream error:', err)
       runInAction(() => {
         this.errorMessage = msg
@@ -147,7 +159,9 @@ class AppStore {
    * Update an existing stream's configuration (name, url)
    */
   async updateStream(id: string, payload: { name?: string; url?: string }) {
-    this.errorMessage = null
+    runInAction(() => {
+      this.errorMessage = null
+    })
     try {
       const updated = await apiHandler.updateStream(id, payload)
       runInAction(() => {
@@ -160,7 +174,7 @@ class AppStore {
       })
       return updated
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to update stream'
+      const msg = extractErrorMessage(err, 'Failed to update stream')
       console.error('[AppStore] updateStream error:', err)
       runInAction(() => {
         this.errorMessage = msg
@@ -204,7 +218,7 @@ class AppStore {
       runInAction(() => {
         if (nextDisplayed) {
           stream.status = 'error'
-          stream.error = err instanceof Error ? err.message : 'Failed to start stream'
+          stream.error = extractErrorMessage(err, 'Failed to start stream')
         }
       })
     }
@@ -230,7 +244,7 @@ class AppStore {
         const s = this.streams.find((s) => s.id === id)
         if (s) {
           s.status = 'error'
-          s.error = err instanceof Error ? err.message : 'Failed to activate stream'
+          s.error = extractErrorMessage(err, 'Failed to activate stream')
         }
       })
     }
@@ -284,31 +298,36 @@ class AppStore {
   }
 
   async startStream(id: string) {
-    const s = this.streams.find((s) => s.id === id)
-    if (s) {
-      s.status = 'starting'
-      s.error = undefined
-      s.displayed = true
-    }
+    runInAction(() => {
+      const s = this.streams.find((s) => s.id === id)
+      if (s) {
+        s.status = 'starting'
+        s.error = undefined
+        s.displayed = true
+      }
+    })
 
     try {
       await apiHandler.startStream(id)
     } catch (err: unknown) {
       console.error(`[AppStore] startStream error for ${id}:`, err)
       runInAction(() => {
+        const s = this.streams.find((s) => s.id === id)
         if (s) {
           s.status = 'error'
-          s.error = err instanceof Error ? err.message : 'Failed to start stream'
+          s.error = extractErrorMessage(err, 'Failed to start stream')
         }
       })
     }
   }
 
   async stopStream(id: string) {
-    const s = this.streams.find((s) => s.id === id)
-    if (s) {
-      s.status = 'stopped'
-    }
+    runInAction(() => {
+      const s = this.streams.find((s) => s.id === id)
+      if (s) {
+        s.status = 'stopped'
+      }
+    })
 
     try {
       await apiHandler.stopStream(id)

@@ -46,6 +46,23 @@ app.get('/', (_req: Request, res: Response) => {
 app.use('/api/health', healthRouter);
 app.use('/api/streams', streamsRouter);
 
+// 404 handler for unknown routes
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    message: 'API endpoint not found',
+  });
+});
+
+// Centralized error handling middleware
+app.use((err: Error, _req: Request, res: Response, _next: express.NextFunction) => {
+  console.error('[Server Error]', err);
+  res.status(500).json({
+    success: false,
+    message: err.message || 'Internal server error',
+  });
+});
+
 // Graceful shutdown handling
 const handleExit = () => {
   console.log('\n[Server] Shutting down gracefully...');

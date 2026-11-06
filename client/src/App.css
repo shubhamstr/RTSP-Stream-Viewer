@@ -97,6 +97,47 @@ body {
   letter-spacing: 0.01em;
 }
 
+/* ─── Global Error Banner ─────────────────────────────────────────────────── */
+.global-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(239, 68, 68, 0.14);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  padding: 8px 16px;
+  font-size: 13px;
+  flex-shrink: 0;
+  z-index: 9;
+}
+
+.global-error-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  word-break: break-word;
+}
+
+.global-error-close {
+  background: transparent;
+  border: none;
+  color: #f87171;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.75;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.global-error-close:hover {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.18);
+}
+
 /* ─── Layout ───────────────────────────────────────────────────────────────── */
 .layout {
   display: flex;

@@ -26,6 +26,7 @@ interface ActiveProcess {
   process: ChildProcess;
   lastError: string;
   frameCount: number;
+  isTerminatedByUser: boolean;
 }
 
 export class StreamManager {
@@ -177,6 +178,7 @@ export class StreamManager {
         process: child,
         lastError: '',
         frameCount: 0,
+        isTerminatedByUser: false,
       };
       this.processes.set(id, activeItem);
 
@@ -248,13 +250,27 @@ export class StreamManager {
 
       child.on('error', (err: Error) => {
         console.error(`[FFmpeg ${id}] Failed to spawn process:`, err.message);
-        this.handleProcessError(id, `FFmpeg failed to start: ${err.message}`);
+        const currentItem = this.processes.get(id);
+        if (currentItem && currentItem.process === child) {
+          this.handleProcessError(id, `FFmpeg failed to start: ${err.message}`);
+        }
       });
 
       child.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
         console.log(`[FFmpeg ${id}] Process exited with code ${code}, signal ${signal}`);
-        const wasStopped = stream.status === 'stopped';
-        this.processes.delete(id);
+
+        // Guard against race conditions: only manage if this is the active process for this stream
+        const currentItem = this.processes.get(id);
+        if (currentItem && currentItem.process === child) {
+          this.processes.delete(id);
+        } else if (!currentItem && activeItem.process === child) {
+          // Process was already removed (e.g. via stopStream)
+        } else {
+          // An obsolete process from a previous start exited. Do not alter current process/stream state.
+          return;
+        }
+
+        const wasStopped = activeItem.isTerminatedByUser || stream.status === 'stopped';
 
         if (!wasStopped) {
           let errDetail = activeItem.lastError;
@@ -296,6 +312,7 @@ export class StreamManager {
     const activeItem = this.processes.get(id);
     if (activeItem) {
       console.log(`[StreamManager] Stopping FFmpeg process for stream ${id}`);
+      activeItem.isTerminatedByUser = true;
       this.processes.delete(id);
 
       try {
