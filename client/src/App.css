@@ -570,13 +570,15 @@ body {
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: 14px;
-  padding: 28px 32px;
-  width: 480px;
+  padding: 24px 28px;
+  width: 520px;
   max-width: calc(100vw - 32px);
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: var(--modal-shadow);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   animation: slide-up 0.2s ease;
 }
 
@@ -596,6 +598,195 @@ body {
 
 .modal-sub {
   font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ─── Default Streams in Modal ────────────────────────────────────────────── */
+.modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-section-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.btn-link-action {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s;
+}
+
+.btn-link-action:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.btn-link-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.default-streams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.default-stream-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-align: left;
+}
+
+.default-stream-card:hover:not(.is-added):not(.is-disabled) {
+  border-color: var(--accent);
+  background: var(--bg3);
+  transform: translateY(-1px);
+}
+
+.default-stream-card.is-added {
+  cursor: default;
+  border-color: var(--border);
+  background: rgba(34, 197, 94, 0.04);
+}
+
+.default-stream-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.default-stream-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.default-stream-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.default-stream-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg3);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  letter-spacing: 0.02em;
+}
+
+.default-stream-url {
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.default-stream-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-card-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.btn-card-add:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-card-add:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.badge-in-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--active-green);
+  background: var(--active-green-dim);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 6px;
+}
+
+/* ─── Modal Divider ────────────────────────────────────────────────────────── */
+.modal-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 0;
+}
+
+.modal-divider::before,
+.modal-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.modal-divider span {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
 }
 

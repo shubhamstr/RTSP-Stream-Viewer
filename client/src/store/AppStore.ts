@@ -94,7 +94,7 @@ class AppStore {
     try {
       const serverStreams = await apiHandler.getStreams()
       runInAction(() => {
-        if (serverStreams && serverStreams.length > 0) {
+        if (Array.isArray(serverStreams)) {
           this.streams = serverStreams
         }
         this.isLoading = false
@@ -111,7 +111,7 @@ class AppStore {
    * Called when adding a new stream URL:
    * Calls the backend API and updates the local store.
    */
-  async addStream(name: string, url: string) {
+  async addStream(name: string, url: string, closeModal = true) {
     this.errorMessage = null
     try {
       const createdStream = await apiHandler.createStream({
@@ -125,8 +125,11 @@ class AppStore {
         // Remove if duplicate id exists, then add
         this.streams = this.streams.filter((s) => s.id !== createdStream.id)
         this.streams.push(createdStream)
-        this.modalOpen = false
+        if (closeModal) {
+          this.modalOpen = false
+        }
       })
+      return createdStream
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to add stream'
       console.error('[AppStore] addStream error:', err)

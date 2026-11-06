@@ -76,6 +76,11 @@ export const CloseIcon = svg(
   13,
 )
 
+export const CheckIcon = svg(
+  <polyline points="20 6 9 17 4 12" />,
+  13,
+)
+
 // ─── Player Controls ──────────────────────────────────────────────────────────
 
 export const PlayIcon = svg(

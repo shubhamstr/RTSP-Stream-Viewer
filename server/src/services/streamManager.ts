@@ -31,41 +31,11 @@ export class StreamManager {
   private nextId = 1;
 
   constructor() {
-    this.seedDefaultStreams();
+    // Streams are not pre-seeded on startup; users can add streams or select default options from the UI modal.
   }
 
   public setSocketServer(io: SocketIOServer) {
     this.io = io;
-  }
-
-  private seedDefaultStreams() {
-    const defaults = [
-      {
-        name: 'Big Buck Bunny (MediaMTX)',
-        url: 'rtsp://localhost:8554/bbb',
-      },
-      {
-        name: 'Elephants Dream (MediaMTX)',
-        url: 'rtsp://localhost:8554/elephants',
-      },
-      {
-        name: 'Tears of Steel (MediaMTX)',
-        url: 'rtsp://localhost:8554/tears',
-      },
-    ];
-
-    for (const d of defaults) {
-      const id = String(this.nextId++);
-      this.streams.set(id, {
-        id,
-        name: d.name,
-        url: d.url,
-        status: 'stopped',
-        active: true,
-        displayed: true,
-        createdAt: Date.now(),
-      });
-    }
   }
 
   public getAll(): StreamItem[] {
