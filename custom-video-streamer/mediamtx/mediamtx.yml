@@ -25,11 +25,6 @@ authInternalUsers:
     ips: []
     permissions:
       - action: publish
-        path: bbb
-      - action: publish
-        path: elephants
-      - action: publish
-        path: tears
 
   # RTSP/HLS reading access
   - user: viewer
@@ -37,11 +32,6 @@ authInternalUsers:
     ips: []
     permissions:
       - action: read
-        path: bbb
-      - action: read
-        path: elephants
-      - action: read
-        path: tears
 
 ###############################################
 # REST API
@@ -94,6 +84,15 @@ srt: false
 ###############################################
 
 paths:
+  earth:
+    source: publisher
+
+  road_and_trees:
+    source: publisher
+
+  watering_plant:
+    source: publisher
+
   bbb:
     source: publisher
 
@@ -102,3 +101,5 @@ paths:
 
   tears:
     source: publisher
+
+  all_others:

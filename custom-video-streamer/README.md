@@ -9,9 +9,9 @@ A self-contained Docker stack that spins up a local **RTSP server** (MediaMTX) a
 | Service | Image | Role |
 |---|---|---|
 | `mediamtx` | `bluenviron/mediamtx:latest` | RTSP relay server + HLS remuxer |
-| `ffmpeg-bbb` | `linuxserver/ffmpeg:latest` | Publishes Big Buck Bunny loop |
-| `ffmpeg-elephants` | `linuxserver/ffmpeg:latest` | Publishes Elephants Dream loop |
-| `ffmpeg-tears` | `linuxserver/ffmpeg:latest` | Publishes Tears of Steel loop |
+| `ffmpeg-earth` | `linuxserver/ffmpeg:latest` | Publishes Earth MP4 loop (`videos/earth.mp4`) |
+| `ffmpeg-road-and-trees` | `linuxserver/ffmpeg:latest` | Publishes Road & Trees loop (`videos/road_and_trees.mp4`) |
+| `ffmpeg-watering-plant` | `linuxserver/ffmpeg:latest` | Publishes Watering Plant loop (`videos/watering_plant.mp4`) |
 
 ---
 
@@ -23,17 +23,17 @@ Authentication is enabled. Credentials: username `viewer`, password `viewer_pass
 
 | Stream | Authenticated URL |
 |---|---|
-| Big Buck Bunny | `rtsp://viewer:viewer_password_123@localhost:8554/bbb` |
-| Elephants Dream | `rtsp://viewer:viewer_password_123@localhost:8554/elephants` |
-| Tears of Steel | `rtsp://viewer:viewer_password_123@localhost:8554/tears` |
+| Earth | `rtsp://viewer:viewer_password_123@localhost:8554/earth` |
+| Road & Trees | `rtsp://viewer:viewer_password_123@localhost:8554/road_and_trees` |
+| Watering Plant | `rtsp://viewer:viewer_password_123@localhost:8554/watering_plant` |
 
 ### HLS (browser-friendly fallback)
 
 | Stream | URL |
 |---|---|
-| Big Buck Bunny | `http://localhost:8888/bbb/index.m3u8` |
-| Elephants Dream | `http://localhost:8888/elephants/index.m3u8` |
-| Tears of Steel | `http://localhost:8888/tears/index.m3u8` |
+| Earth | `http://localhost:8888/earth/index.m3u8` |
+| Road & Trees | `http://localhost:8888/road_and_trees/index.m3u8` |
+| Watering Plant | `http://localhost:8888/watering_plant/index.m3u8` |
 
 ### MediaMTX REST API
 
@@ -88,7 +88,7 @@ docker compose down
 docker compose logs -f
 
 # Only FFmpeg publishers
-docker compose logs -f ffmpeg-bbb ffmpeg-elephants ffmpeg-tears
+docker compose logs -f ffmpeg-earth ffmpeg-road-and-trees ffmpeg-watering-plant
 
 # Only MediaMTX
 docker compose logs -f mediamtx

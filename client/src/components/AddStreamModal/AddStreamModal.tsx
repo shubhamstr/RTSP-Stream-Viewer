@@ -11,18 +11,18 @@ export interface DefaultStreamOption {
 
 export const DEFAULT_STREAMS: DefaultStreamOption[] = [
   {
-    name: 'Big Buck Bunny (MediaMTX)',
-    url: 'rtsp://viewer:viewer_password_123@localhost:8554/bbb',
+    name: 'Earth (MediaMTX)',
+    url: 'rtsp://viewer:viewer_password_123@localhost:8554/earth',
     tag: 'MediaMTX RTSP',
   },
   {
-    name: 'Elephants Dream (MediaMTX)',
-    url: 'rtsp://viewer:viewer_password_123@localhost:8554/elephants',
+    name: 'Road & Trees (MediaMTX)',
+    url: 'rtsp://viewer:viewer_password_123@localhost:8554/road_and_trees',
     tag: 'MediaMTX RTSP',
   },
   {
-    name: 'Tears of Steel (MediaMTX)',
-    url: 'rtsp://viewer:viewer_password_123@localhost:8554/tears',
+    name: 'Watering Plant (MediaMTX)',
+    url: 'rtsp://viewer:viewer_password_123@localhost:8554/watering_plant',
     tag: 'MediaMTX RTSP',
   },
 ]
@@ -362,7 +362,7 @@ const AddStreamModal = observer(() => {
                 <input
                   id="add-stream-url"
                   type="text"
-                  placeholder="rtsp://localhost:8554/bbb or rtsp://ip:port/stream"
+                  placeholder="rtsp://localhost:8554/earth or rtsp://ip:port/stream"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   disabled={loading || !!addingUrl}

@@ -1,7 +1,7 @@
 ###############################################
 # Custom RTSP Video Streamer
 # - MediaMTX  : RTSP server + HLS remuxer
-# - ffmpeg-*  : Loop synthetic video feeds as RTSP streams
+# - ffmpeg-*  : Loop custom video feeds as RTSP streams
 ###############################################
 
 services:
@@ -23,24 +23,26 @@ services:
       - streamer-net
 
   # ─────────────────────────────────────────
-  # Stream 1 – Big Buck Bunny Test Pattern
-  # rtsp://localhost:8554/bbb
+  # Stream 1 – Earth
+  # rtsp://localhost:8554/earth
   # ─────────────────────────────────────────
-  ffmpeg-bbb:
+  ffmpeg-earth:
     image: linuxserver/ffmpeg:latest
-    container_name: ffmpeg-bbb
+    container_name: ffmpeg-earth
     restart: on-failure
     depends_on:
       - mediamtx
     networks:
       - streamer-net
+    volumes:
+      - ./videos:/videos:ro
     entrypoint:
       - ffmpeg
       - -re
-      - -f
-      - lavfi
+      - -stream_loop
+      - "-1"
       - -i
-      - testsrc=size=854x480:rate=25
+      - /videos/earth.mp4
       - -c:v
       - libx264
       - -pix_fmt
@@ -50,34 +52,40 @@ services:
       - -tune
       - zerolatency
       - -b:v
-      - 800k
+      - 1000k
       - -g
       - "25"
+      - -c:a
+      - aac
+      - -b:a
+      - 64k
       - -f
       - rtsp
       - -rtsp_transport
       - tcp
-      - rtsp://publisher:publish_password_123@mediamtx:8554/bbb
+      - rtsp://publisher:publish_password_123@mediamtx:8554/earth
 
   # ─────────────────────────────────────────
-  # Stream 2 – Elephants Dream Test Pattern
-  # rtsp://localhost:8554/elephants
+  # Stream 2 – Road & Trees
+  # rtsp://localhost:8554/road_and_trees
   # ─────────────────────────────────────────
-  ffmpeg-elephants:
+  ffmpeg-road-and-trees:
     image: linuxserver/ffmpeg:latest
-    container_name: ffmpeg-elephants
+    container_name: ffmpeg-road-and-trees
     restart: on-failure
     depends_on:
       - mediamtx
     networks:
       - streamer-net
+    volumes:
+      - ./videos:/videos:ro
     entrypoint:
       - ffmpeg
       - -re
-      - -f
-      - lavfi
+      - -stream_loop
+      - "-1"
       - -i
-      - testsrc2=size=854x480:rate=25
+      - /videos/road_and_trees.mp4
       - -c:v
       - libx264
       - -pix_fmt
@@ -87,34 +95,40 @@ services:
       - -tune
       - zerolatency
       - -b:v
-      - 800k
+      - 1200k
       - -g
       - "25"
+      - -c:a
+      - aac
+      - -b:a
+      - 64k
       - -f
       - rtsp
       - -rtsp_transport
       - tcp
-      - rtsp://publisher:publish_password_123@mediamtx:8554/elephants
+      - rtsp://publisher:publish_password_123@mediamtx:8554/road_and_trees
 
   # ─────────────────────────────────────────
-  # Stream 3 – Tears of Steel Test Bars
-  # rtsp://localhost:8554/tears
+  # Stream 3 – Watering Plant
+  # rtsp://localhost:8554/watering_plant
   # ─────────────────────────────────────────
-  ffmpeg-tears:
+  ffmpeg-watering-plant:
     image: linuxserver/ffmpeg:latest
-    container_name: ffmpeg-tears
+    container_name: ffmpeg-watering-plant
     restart: on-failure
     depends_on:
       - mediamtx
     networks:
       - streamer-net
+    volumes:
+      - ./videos:/videos:ro
     entrypoint:
       - ffmpeg
       - -re
-      - -f
-      - lavfi
+      - -stream_loop
+      - "-1"
       - -i
-      - smptebars=size=854x480:rate=25
+      - /videos/watering_plant.mp4
       - -c:v
       - libx264
       - -pix_fmt
@@ -124,14 +138,15 @@ services:
       - -tune
       - zerolatency
       - -b:v
-      - 800k
+      - 1000k
       - -g
       - "25"
+      - -an
       - -f
       - rtsp
       - -rtsp_transport
       - tcp
-      - rtsp://publisher:publish_password_123@mediamtx:8554/tears
+      - rtsp://publisher:publish_password_123@mediamtx:8554/watering_plant
 
 networks:
   streamer-net:

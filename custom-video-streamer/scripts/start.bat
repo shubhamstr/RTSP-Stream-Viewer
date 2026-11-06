@@ -19,16 +19,16 @@ echo.
 echo ===================================================
 echo   RTSP Streams (authenticated with viewer:viewer_password_123)
 echo ===================================================
-echo   Big Buck Bunny  : rtsp://viewer:viewer_password_123@localhost:8554/bbb
-echo   Elephants Dream : rtsp://viewer:viewer_password_123@localhost:8554/elephants
-echo   Tears of Steel  : rtsp://viewer:viewer_password_123@localhost:8554/tears
+echo   Earth           : rtsp://viewer:viewer_password_123@localhost:8554/earth
+echo   Road & Trees    : rtsp://viewer:viewer_password_123@localhost:8554/road_and_trees
+echo   Watering Plant  : rtsp://viewer:viewer_password_123@localhost:8554/watering_plant
 echo.
 echo ===================================================
 echo   HLS Streams (browser-friendly)
 echo ===================================================
-echo   http://localhost:8888/bbb/index.m3u8
-echo   http://localhost:8888/elephants/index.m3u8
-echo   http://localhost:8888/tears/index.m3u8
+echo   http://localhost:8888/earth/index.m3u8
+echo   http://localhost:8888/road_and_trees/index.m3u8
+echo   http://localhost:8888/watering_plant/index.m3u8
 echo.
 echo ===================================================
 echo   MediaMTX REST API

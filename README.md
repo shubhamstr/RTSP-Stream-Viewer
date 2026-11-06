@@ -103,9 +103,9 @@ The `custom-video-streamer` package provides 3 live test streams ready for devel
 
 | Stream Name | RTSP Stream URL (Port 8554) | HLS Stream URL (Port 8888) |
 |---|---|---|
-| **Big Buck Bunny** | `rtsp://viewer:viewer_password_123@localhost:8554/bbb` | `http://localhost:8888/bbb/index.m3u8` |
-| **Elephants Dream** | `rtsp://viewer:viewer_password_123@localhost:8554/elephants` | `http://localhost:8888/elephants/index.m3u8` |
-| **Tears of Steel** | `rtsp://viewer:viewer_password_123@localhost:8554/tears` | `http://localhost:8888/tears/index.m3u8` |
+| **Earth** | `rtsp://viewer:viewer_password_123@localhost:8554/earth` | `http://localhost:8888/earth/index.m3u8` |
+| **Road & Trees** | `rtsp://viewer:viewer_password_123@localhost:8554/road_and_trees` | `http://localhost:8888/road_and_trees/index.m3u8` |
+| **Watering Plant** | `rtsp://viewer:viewer_password_123@localhost:8554/watering_plant` | `http://localhost:8888/watering_plant/index.m3u8` |
 
 - **MediaMTX REST API**: `http://localhost:9997/v3/paths/list`
 
