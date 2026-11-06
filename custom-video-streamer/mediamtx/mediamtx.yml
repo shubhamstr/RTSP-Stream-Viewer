@@ -1,57 +1,54 @@
 ###############################################
-# MediaMTX configuration for RTSP test server
+# MediaMTX v1.x configuration
+# Note: use true/false (not yes/no) for booleans
 ###############################################
 
-# Log level: debug, info, warn, error
 logLevel: info
 logDestinations: [stdout]
 
-# API for managing paths at runtime
-api: yes
+# REST API
+api: true
 apiAddress: :9997
 
-# RTSP server
-rtsp: yes
+# RTSP
+rtsp: true
 rtspAddress: :8554
-rtspEncryption: no
+rtspEncryption: "no"
 
-# RTMP server (disabled)
-rtmp: no
+# RTMP – disabled
+rtmp: false
 
-# HLS server – lets the browser pull streams via HLS too
-hls: yes
+# HLS – browser-friendly remux
+hls: true
 hlsAddress: :8888
-hlsAlwaysRemux: yes
-hlsSegmentCount: 3
+hlsAlwaysRemux: true
+# hlsVariant defaults to "lowLatency" which requires hlsSegmentCount >= 7
+# Switch to "fmp4" or bump count to 7
+hlsVariant: mpegts
+hlsSegmentCount: 7
 hlsSegmentDuration: 1s
-hlsPartDuration: 200ms
 hlsSegmentMaxSize: 50MB
-hlsAllowOrigin: "*"
+hlsAllowOrigins: ["*"]
 
-# WebRTC server (disabled – not needed for basic test)
-webrtc: no
+# WebRTC – disabled
+webrtc: false
 
-# SRT (disabled)
-srt: no
+# SRT – disabled
+srt: false
 
 ###############################################
-# Named paths / streams
+# Named paths
 ###############################################
 paths:
 
-  # Stream 1 – Big Buck Bunny (looping)
   bbb:
     source: publisher
 
-  # Stream 2 – Elephants Dream (looping)
   elephants:
     source: publisher
 
-  # Stream 3 – Tears of Steel (looping)
   tears:
     source: publisher
 
-  # Catch-all: allow any publisher to push to an unnamed path
   "~^.*$":
     source: publisher
-
