@@ -57,7 +57,7 @@ services:
       - rtsp
       - -rtsp_transport
       - tcp
-      - rtsp://mediamtx:8554/bbb
+      - rtsp://publisher:publish_password_123@mediamtx:8554/bbb
 
   # ─────────────────────────────────────────
   # Stream 2 – Elephants Dream Test Pattern
@@ -94,7 +94,7 @@ services:
       - rtsp
       - -rtsp_transport
       - tcp
-      - rtsp://mediamtx:8554/elephants
+      - rtsp://publisher:publish_password_123@mediamtx:8554/elephants
 
   # ─────────────────────────────────────────
   # Stream 3 – Tears of Steel Test Bars
@@ -131,7 +131,7 @@ services:
       - rtsp
       - -rtsp_transport
       - tcp
-      - rtsp://mediamtx:8554/tears
+      - rtsp://publisher:publish_password_123@mediamtx:8554/tears
 
 networks:
   streamer-net:

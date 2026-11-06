@@ -99,13 +99,13 @@ RTSP-Video-Stream-Viewer/
 
 ## 🎬 Out-of-the-Box Test Streams
 
-The `custom-video-streamer` package provides 3 live test streams ready for development:
+The `custom-video-streamer` package provides 3 live test streams ready for development (with authentication credentials: username `viewer`, password `viewer_password_123`):
 
 | Stream Name | RTSP Stream URL (Port 8554) | HLS Stream URL (Port 8888) |
 |---|---|---|
-| **Big Buck Bunny** | `rtsp://localhost:8554/bbb` | `http://localhost:8888/bbb/index.m3u8` |
-| **Elephants Dream** | `rtsp://localhost:8554/elephants` | `http://localhost:8888/elephants/index.m3u8` |
-| **Tears of Steel** | `rtsp://localhost:8554/tears` | `http://localhost:8888/tears/index.m3u8` |
+| **Big Buck Bunny** | `rtsp://viewer:viewer_password_123@localhost:8554/bbb` | `http://localhost:8888/bbb/index.m3u8` |
+| **Elephants Dream** | `rtsp://viewer:viewer_password_123@localhost:8554/elephants` | `http://localhost:8888/elephants/index.m3u8` |
+| **Tears of Steel** | `rtsp://viewer:viewer_password_123@localhost:8554/tears` | `http://localhost:8888/tears/index.m3u8` |
 
 - **MediaMTX REST API**: `http://localhost:9997/v3/paths/list`
 

@@ -19,11 +19,13 @@ A self-contained Docker stack that spins up a local **RTSP server** (MediaMTX) a
 
 ### RTSP (use in your app / VLC)
 
-| Stream | URL |
+Authentication is enabled. Credentials: username `viewer`, password `viewer_password_123`.
+
+| Stream | Authenticated URL |
 |---|---|
-| Big Buck Bunny | `rtsp://localhost:8554/bbb` |
-| Elephants Dream | `rtsp://localhost:8554/elephants` |
-| Tears of Steel | `rtsp://localhost:8554/tears` |
+| Big Buck Bunny | `rtsp://viewer:viewer_password_123@localhost:8554/bbb` |
+| Elephants Dream | `rtsp://viewer:viewer_password_123@localhost:8554/elephants` |
+| Tears of Steel | `rtsp://viewer:viewer_password_123@localhost:8554/tears` |
 
 ### HLS (browser-friendly fallback)
 

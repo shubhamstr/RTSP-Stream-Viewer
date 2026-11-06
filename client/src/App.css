@@ -790,6 +790,22 @@ body {
   color: var(--text-muted);
 }
 
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
 .form-group {
   display: flex;
   flex-direction: column;

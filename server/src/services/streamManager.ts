@@ -18,6 +18,10 @@ const resolveFfmpegPath = (): string => {
 const FFMPEG_BIN = resolveFfmpegPath();
 console.log(`[StreamManager] Using FFmpeg binary: ${FFMPEG_BIN}`);
 
+const sanitizeStreamUrl = (url: string): string => {
+  return url.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@');
+};
+
 interface ActiveProcess {
   process: ChildProcess;
   lastError: string;
@@ -59,7 +63,7 @@ export class StreamManager {
     };
 
     this.streams.set(id, newStream);
-    console.log(`[StreamManager] Added new stream ${id}: "${newStream.name}" (${newStream.url})`);
+    console.log(`[StreamManager] Added new stream ${id}: "${newStream.name}" (${sanitizeStreamUrl(newStream.url)})`);
 
     // Auto-start if requested active and displayed
     if (newStream.active && newStream.displayed) {
@@ -137,7 +141,7 @@ export class StreamManager {
     stream.active = true;
     this.broadcastStreamStatus(id);
 
-    console.log(`[StreamManager] Starting FFmpeg process for stream ${id} (${stream.url})`);
+    console.log(`[StreamManager] Starting FFmpeg process for stream ${id} (${sanitizeStreamUrl(stream.url)})`);
 
     const isRtsp = stream.url.toLowerCase().startsWith('rtsp://') || stream.url.toLowerCase().startsWith('rtsps://');
     const args: string[] = [
@@ -261,6 +265,12 @@ export class StreamManager {
             errDetail = 'Connection refused (Ensure RTSP server is reachable at specified host/port)';
           } else if (errDetail.includes('404')) {
             errDetail = 'RTSP stream path not found (404)';
+          } else if (
+            errDetail.includes('401') ||
+            errDetail.toLowerCase().includes('unauthorized') ||
+            errDetail.toLowerCase().includes('authorization failed')
+          ) {
+            errDetail = 'Authentication failed (401 Unauthorized). Please check username and password.';
           } else if (errDetail.includes('Immediate exit requested')) {
             errDetail = 'Stream connection timed out';
           }

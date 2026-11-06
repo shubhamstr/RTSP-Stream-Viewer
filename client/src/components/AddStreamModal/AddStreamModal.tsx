@@ -12,17 +12,17 @@ export interface DefaultStreamOption {
 export const DEFAULT_STREAMS: DefaultStreamOption[] = [
   {
     name: 'Big Buck Bunny (MediaMTX)',
-    url: 'rtsp://localhost:8554/bbb',
+    url: 'rtsp://viewer:viewer_password_123@localhost:8554/bbb',
     tag: 'MediaMTX RTSP',
   },
   {
     name: 'Elephants Dream (MediaMTX)',
-    url: 'rtsp://localhost:8554/elephants',
+    url: 'rtsp://viewer:viewer_password_123@localhost:8554/elephants',
     tag: 'MediaMTX RTSP',
   },
   {
     name: 'Tears of Steel (MediaMTX)',
-    url: 'rtsp://localhost:8554/tears',
+    url: 'rtsp://viewer:viewer_password_123@localhost:8554/tears',
     tag: 'MediaMTX RTSP',
   },
 ]
@@ -30,6 +30,8 @@ export const DEFAULT_STREAMS: DefaultStreamOption[] = [
 const AddStreamModal = observer(() => {
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [addingUrl, setAddingUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -83,15 +85,36 @@ const AddStreamModal = observer(() => {
     }
   }
 
+  // Helper to inject credentials into URL if entered separately
+  const formatStreamUrl = (rawUrl: string, u: string, p: string): string => {
+    let finalUrl = rawUrl.trim()
+    const user = u.trim()
+    const pass = p.trim()
+
+    if ((user || pass) && !finalUrl.includes('@')) {
+      const schemeMatch = finalUrl.match(/^([a-zA-Z0-9+.-]+:\/\/)(.*)$/)
+      if (schemeMatch) {
+        const scheme = schemeMatch[1]
+        const rest = schemeMatch[2]
+        const userPart = encodeURIComponent(user)
+        const passPart = encodeURIComponent(pass)
+        finalUrl = `${scheme}${userPart}${pass ? `:${passPart}` : ''}@${rest}`
+      }
+    }
+    return finalUrl
+  }
+
   // Custom stream addition from form fields
   const handleAddCustom = async () => {
     if (!name.trim() || !url.trim() || loading || addingUrl) return
+
+    const finalUrl = formatStreamUrl(url, username, password)
 
     setLoading(true)
     setError(null)
 
     try {
-      await appStore.addStream(name.trim(), url.trim())
+      await appStore.addStream(name.trim(), finalUrl)
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } }; message?: string }
       const msg = axiosErr.response?.data?.message || axiosErr.message || 'Failed to connect to stream'
@@ -223,6 +246,34 @@ const AddStreamModal = observer(() => {
             disabled={loading || !!addingUrl}
             onKeyDown={(e) => e.key === 'Enter' && handleAddCustom()}
           />
+        </div>
+
+        {/* Optional Credentials */}
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="add-stream-username">Username (Optional)</label>
+            <input
+              id="add-stream-username"
+              type="text"
+              placeholder="e.g. viewer"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading || !!addingUrl}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddCustom()}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="add-stream-password">Password (Optional)</label>
+            <input
+              id="add-stream-password"
+              type="password"
+              placeholder="e.g. viewer_password_123"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading || !!addingUrl}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddCustom()}
+            />
+          </div>
         </div>
 
         {/* Footer */}

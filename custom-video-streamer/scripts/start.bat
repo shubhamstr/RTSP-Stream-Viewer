@@ -17,11 +17,11 @@ echo.
 echo [OK] All services are up!
 echo.
 echo ===================================================
-echo   RTSP Streams
+echo   RTSP Streams (authenticated with viewer:viewer_password_123)
 echo ===================================================
-echo   Big Buck Bunny  : rtsp://localhost:8554/bbb
-echo   Elephants Dream : rtsp://localhost:8554/elephants
-echo   Tears of Steel  : rtsp://localhost:8554/tears
+echo   Big Buck Bunny  : rtsp://viewer:viewer_password_123@localhost:8554/bbb
+echo   Elephants Dream : rtsp://viewer:viewer_password_123@localhost:8554/elephants
+echo   Tears of Steel  : rtsp://viewer:viewer_password_123@localhost:8554/tears
 echo.
 echo ===================================================
 echo   HLS Streams (browser-friendly)
