@@ -46,7 +46,8 @@ Since storage is backed by native JavaScript collections:
 2. **All Streams Query (`getAll`)**: $O(N)$ complexity converting map values: `Array.from(this.streams.values())`.
 3. **Delete Operation (`deleteStream`)**: $O(1)$ complexity via `this.streams.delete(id)`.
 4. **Client-side filtering**:
-   - `listedStreams`: $O(N)$ filter by `s.active` when tab is `'active'`.
+   - `activeStreams`: $O(N)$ filter by active and streaming/displayed streams (`s.active && (s.displayed || s.status === 'streaming' || s.status === 'starting')`).
+   - `listedStreams`: $O(N)$ filter returning `activeStreams` when tab is `'active'`, or all `streams` when tab is `'all'`.
    - `displayedStreams`: $O(N)$ filter by `s.active && s.displayed`.
 
 ---
@@ -54,13 +55,13 @@ Since storage is backed by native JavaScript collections:
 ## 4. Preset & Default Seed Data
 The server starts with an **empty** stream map (`this.streams = new Map()`).
 
-Default streams are defined on the frontend in [`client/src/components/AddStreamModal/AddStreamModal.tsx`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/components/AddStreamModal/AddStreamModal.tsx):
+Default streams are defined on the frontend in [`client/src/constants/presets.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/constants/presets.ts):
 
 | Stream Name | Pre-Configured URL | Protocol & Port |
 |---|---|---|
-| **Earth (MediaMTX)** | `rtsp://viewer:viewer_password_123@localhost:8554/earth` | RTSP (:8554) |
 | **Road & Trees (MediaMTX)** | `rtsp://viewer:viewer_password_123@localhost:8554/road_and_trees` | RTSP (:8554) |
 | **Watering Plant (MediaMTX)** | `rtsp://viewer:viewer_password_123@localhost:8554/watering_plant` | RTSP (:8554) |
+| **Earth (MediaMTX)** | `rtsp://viewer:viewer_password_123@localhost:8554/earth` | RTSP (:8554) |
 
 Users can add them individually or in batch via "+ Add All", which issues `POST /api/streams` requests to the backend.
 

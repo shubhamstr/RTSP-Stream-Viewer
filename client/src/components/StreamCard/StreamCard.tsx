@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite'
 import { appStore } from '../../store/AppStore'
-import { PlusCircleIcon, TrashIcon } from '../../icons/icons'
+import { PauseIcon, PlusCircleIcon, TrashIcon } from '../../icons/icons'
 import type { Stream } from '../../types'
 import { sanitizeStreamUrl } from '../../utils/url'
 
@@ -74,7 +74,7 @@ const StreamCard = observer(({ stream }: StreamCardProps) => {
             onClick={() => appStore.deactivateStream(stream.id)}
             title="Deactivate stream"
           >
-            <PlusCircleIcon /> Deactivate
+            <PauseIcon /> Deactivate
           </button>
         ) : (
           <button

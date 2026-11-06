@@ -337,11 +337,16 @@ class AppStore {
   }
 
   // ── Computed ──────────────────────────────────────────────────────────────
+  /** Streams currently active / streaming / displayed. */
+  get activeStreams(): Stream[] {
+    return this.streams.filter(
+      (s) => s.active && (s.displayed || s.status === 'streaming' || s.status === 'starting')
+    )
+  }
+
   /** Streams shown in the sidebar list (respects Active / All tab). */
   get listedStreams(): Stream[] {
-    return this.tab === 'active'
-      ? this.streams.filter((s) => s.active)
-      : this.streams
+    return this.tab === 'active' ? this.activeStreams : this.streams
   }
 
   /** Streams actively displayed in the main player grid. */

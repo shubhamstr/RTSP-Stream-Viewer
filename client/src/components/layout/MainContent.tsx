@@ -4,7 +4,7 @@ import { PlusCircleIcon } from '../../icons/icons'
 import StreamPlayer from '../StreamPlayer/StreamPlayer'
 
 const MainContent = observer(() => {
-  const { displayedStreams, openModal } = appStore
+  const { streams, displayedStreams, openModal } = appStore
 
   if (displayedStreams.length === 0) {
     return (
@@ -28,7 +28,7 @@ const MainContent = observer(() => {
     <main className="main">
       <div className="main-content">
         <div className="main-header">
-          Displayed Streams ({displayedStreams.length}/{displayedStreams.length})
+          Displayed Streams ({displayedStreams.length}/{streams.length})
         </div>
         <div
           className={`players-grid ${

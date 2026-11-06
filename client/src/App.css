@@ -159,7 +159,7 @@ body {
 .sidebar-tabs {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   padding: 8px 10px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -167,23 +167,56 @@ body {
 
 .tab {
   flex: 1;
-  padding: 5px 8px;
-  font-size: 12.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 12px;
   font-weight: 500;
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
   white-space: nowrap;
+  user-select: none;
 }
 
-.tab:hover { color: var(--text); background: var(--bg3); }
+.tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.light .tab:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
 .tab--on {
   background: var(--bg3);
   color: var(--text-heading);
   border-color: var(--border2);
+  font-weight: 600;
+}
+
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bg4);
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.tab--on .tab-count {
+  background: var(--accent-dim);
+  color: var(--accent);
 }
 
 .add-btn {
