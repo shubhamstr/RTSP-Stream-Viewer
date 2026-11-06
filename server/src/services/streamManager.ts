@@ -178,7 +178,7 @@ export class StreamManager {
 
     if (isRtsp) {
       args.push('-rtsp_transport', 'tcp');
-      args.push('-stimeout', '5000000'); // 5 second socket timeout (in microseconds)
+      args.push('-timeout', '5000000'); // 5 second socket timeout (in microseconds)
     }
 
     args.push(

@@ -28,3 +28,4 @@ export const getSocket = (): Socket => {
 }
 
 export default getSocket
+

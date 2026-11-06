@@ -26,3 +26,4 @@ export interface UpdateStreamDto {
   active?: boolean;
   displayed?: boolean;
 }
+

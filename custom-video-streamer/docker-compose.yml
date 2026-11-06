@@ -1,11 +1,7 @@
 ###############################################
 # Custom RTSP Video Streamer
 # - MediaMTX  : RTSP server + HLS remuxer
-# - ffmpeg-*  : Loop public MP4s as RTSP streams
-#
-# Fix: MediaMTX uses a distroless/scratch image (no shell,
-# no wget/nc). Healthcheck removed; FFmpeg containers use
-# restart: on-failure so they retry until MediaMTX is ready.
+# - ffmpeg-*  : Loop synthetic video feeds as RTSP streams
 ###############################################
 
 services:
@@ -27,14 +23,12 @@ services:
       - streamer-net
 
   # ─────────────────────────────────────────
-  # Stream 1 – Big Buck Bunny
+  # Stream 1 – Big Buck Bunny Test Pattern
   # rtsp://localhost:8554/bbb
   # ─────────────────────────────────────────
   ffmpeg-bbb:
     image: linuxserver/ffmpeg:latest
     container_name: ffmpeg-bbb
-    # restart: on-failure lets this container retry if mediamtx
-    # isn't ready yet when it first starts
     restart: on-failure
     depends_on:
       - mediamtx
@@ -43,32 +37,22 @@ services:
     entrypoint:
       - ffmpeg
       - -re
-      - -stream_loop
-      - "-1"
+      - -f
+      - lavfi
       - -i
-      - http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
+      - testsrc=size=854x480:rate=25
       - -c:v
       - libx264
+      - -pix_fmt
+      - yuv420p
       - -preset
       - ultrafast
       - -tune
       - zerolatency
       - -b:v
-      - 500k
-      - -maxrate
-      - 500k
-      - -bufsize
-      - 1000k
-      - -vf
-      - scale=854:480
+      - 800k
       - -g
-      - "30"
-      - -c:a
-      - aac
-      - -b:a
-      - 64k
-      - -ar
-      - "44100"
+      - "25"
       - -f
       - rtsp
       - -rtsp_transport
@@ -76,7 +60,7 @@ services:
       - rtsp://mediamtx:8554/bbb
 
   # ─────────────────────────────────────────
-  # Stream 2 – Elephants Dream
+  # Stream 2 – Elephants Dream Test Pattern
   # rtsp://localhost:8554/elephants
   # ─────────────────────────────────────────
   ffmpeg-elephants:
@@ -90,32 +74,22 @@ services:
     entrypoint:
       - ffmpeg
       - -re
-      - -stream_loop
-      - "-1"
+      - -f
+      - lavfi
       - -i
-      - http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4
+      - testsrc2=size=854x480:rate=25
       - -c:v
       - libx264
+      - -pix_fmt
+      - yuv420p
       - -preset
       - ultrafast
       - -tune
       - zerolatency
       - -b:v
-      - 500k
-      - -maxrate
-      - 500k
-      - -bufsize
-      - 1000k
-      - -vf
-      - scale=854:480
+      - 800k
       - -g
-      - "30"
-      - -c:a
-      - aac
-      - -b:a
-      - 64k
-      - -ar
-      - "44100"
+      - "25"
       - -f
       - rtsp
       - -rtsp_transport
@@ -123,7 +97,7 @@ services:
       - rtsp://mediamtx:8554/elephants
 
   # ─────────────────────────────────────────
-  # Stream 3 – Tears of Steel
+  # Stream 3 – Tears of Steel Test Bars
   # rtsp://localhost:8554/tears
   # ─────────────────────────────────────────
   ffmpeg-tears:
@@ -137,32 +111,22 @@ services:
     entrypoint:
       - ffmpeg
       - -re
-      - -stream_loop
-      - "-1"
+      - -f
+      - lavfi
       - -i
-      - http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4
+      - smptebars=size=854x480:rate=25
       - -c:v
       - libx264
+      - -pix_fmt
+      - yuv420p
       - -preset
       - ultrafast
       - -tune
       - zerolatency
       - -b:v
-      - 500k
-      - -maxrate
-      - 500k
-      - -bufsize
-      - 1000k
-      - -vf
-      - scale=854:480
+      - 800k
       - -g
-      - "30"
-      - -c:a
-      - aac
-      - -b:a
-      - 64k
-      - -ar
-      - "44100"
+      - "25"
       - -f
       - rtsp
       - -rtsp_transport
