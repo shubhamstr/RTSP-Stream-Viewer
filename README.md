@@ -1,6 +1,6 @@
 # 📡 RTSP Video Stream Viewer
 
-A full-stack web application for viewing live **RTSP (Real-Time Streaming Protocol)** video streams in a browser. The backend transcodes RTSP streams in real time and delivers them to the frontend via **WebSockets** or **HLS**, while the React frontend renders a live, low-latency video player.
+A full-stack web application for viewing live **RTSP (Real-Time Streaming Protocol)** video streams in a browser. The backend transcodes RTSP streams in real time and delivers them to the frontend via **WebSockets** or **HLS**, while the React frontend renders a live, low-latency multi-stream video dashboard.
 
 ---
 
@@ -8,11 +8,29 @@ A full-stack web application for viewing live **RTSP (Real-Time Streaming Protoc
 
 ```
 RTSP-Video-Stream-Viewer/
-├── client/                  # React + TypeScript frontend (Vite)
+├── client/                        # React + TypeScript frontend (Vite)
 │   ├── public/
 │   ├── src/
 │   │   ├── assets/
+│   │   ├── components/
+│   │   │   ├── layout/
+│   │   │   │   ├── Topbar.tsx     # App bar with title and theme toggle
+│   │   │   │   ├── Sidebar.tsx    # Stream list with Active / All tabs
+│   │   │   │   └── MainContent.tsx# Responsive player grid
+│   │   │   ├── StreamCard/
+│   │   │   │   └── StreamCard.tsx # Sidebar stream item (activate / delete)
+│   │   │   ├── StreamPlayer/
+│   │   │   │   └── StreamPlayer.tsx # Per-stream video player with controls
+│   │   │   └── AddStreamModal/
+│   │   │       └── AddStreamModal.tsx # Modal form to register new streams
+│   │   ├── icons/
+│   │   │   └── icons.tsx          # Inline SVG icon library
+│   │   ├── store/
+│   │   │   └── AppStore.ts        # MobX singleton store (streams, theme, modal)
+│   │   ├── types/
+│   │   │   └── index.ts           # Shared TypeScript types (Stream, Tab)
 │   │   ├── App.tsx
+│   │   ├── App.css
 │   │   ├── main.tsx
 │   │   └── index.css
 │   ├── index.html
@@ -20,7 +38,7 @@ RTSP-Video-Stream-Viewer/
 │   ├── tsconfig.json
 │   └── package.json
 │
-├── server/                  # Node.js + TypeScript backend (Express)
+├── server/                        # Node.js + TypeScript backend (Express)
 │   ├── src/
 │   │   ├── routes/
 │   │   ├── services/
@@ -35,13 +53,14 @@ RTSP-Video-Stream-Viewer/
 
 ## 🧰 Tech Stack
 
-| Layer     | Technology                              |
-|-----------|-----------------------------------------|
-| Frontend  | React 19, TypeScript, Vite              |
-| Backend   | Node.js, Express, TypeScript            |
-| Streaming | FFmpeg (RTSP → HLS / WebSocket proxy)  |
-| Protocol  | RTSP input → HLS / WebSocket output    |
-| Dev Tools | ESLint, TSConfig strict mode            |
+| Layer         | Technology                                        |
+|---------------|---------------------------------------------------|
+| Frontend      | React 19, TypeScript 6, Vite 8                    |
+| State Mgmt    | MobX 7 + mobx-react-lite 5 (observable singleton) |
+| Backend       | Node.js, Express, TypeScript                      |
+| Streaming     | FFmpeg (RTSP → HLS / WebSocket proxy)             |
+| Protocol      | RTSP input → HLS / WebSocket output               |
+| Dev Tools     | ESLint 10, TSConfig strict mode                   |
 
 ---
 
@@ -50,8 +69,12 @@ RTSP-Video-Stream-Viewer/
 - 🎥 **Live RTSP stream ingestion** via FFmpeg on the server
 - 🌐 **Browser-compatible playback** — no native RTSP support needed
 - 📡 **Real-time delivery** over WebSocket or HLS segments
-- 🔗 **Dynamic stream URL** — enter any RTSP URL through the UI
-- 🧩 **Modular architecture** — clean separation of client and server
+- 🔗 **Dynamic stream management** — add any RTSP URL via the modal UI
+- 🗂️ **Sidebar with Active / All tabs** — filter streams by their state
+- 🟩 **Multi-stream player grid** — single stream fills the view; two or more switch to a 2-column responsive grid
+- ▶️ **Per-player controls** — fullscreen, picture-in-picture, refresh, settings, and close
+- 🌙 **Dark / Light theme toggle** — persisted in observable state, applied app-wide
+- 🧩 **MobX observable store** — all UI state (streams, theme, modal) in a single reactive singleton
 - 🔒 **TypeScript end-to-end** — fully typed client and server code
 
 ---
@@ -128,24 +151,50 @@ The backend API runs at: **http://localhost:4000**
 
 ---
 
-## 📋 Available Scripts
+## 🖥️ UI Overview
 
-### Client (`/client`)
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Topbar: [📹 RTSP Stream Viewer]                     [🌙/☀️ Theme] │
+├──────────────────┬──────────────────────────────────────────────────┤
+│  Sidebar         │  Main Content                                     │
+│  ┌────────────┐  │  ┌──────────────────────────────────────────┐    │
+│  │Active│ All │  │  │  Displayed Streams (N)                   │    │
+│  └────────────┘  │  │  ┌────────────┐  ┌────────────┐          │    │
+│  [+ Add]         │  │  │ StreamPlayer│  │ StreamPlayer│          │    │
+│                  │  │  │ [⛶][⧉][↺][⚙][✕]           │          │    │
+│  ┌────────────┐  │  │  └────────────┘  └────────────┘          │    │
+│  │ StreamCard │  │  └──────────────────────────────────────────┘    │
+│  │ [name]     │  │                                                   │
+│  │ [url]      │  │                                                   │
+│  │ Active ●   │  │                                                   │
+│  │[Deactivate]│  │                                                   │
+│  │  [Delete]  │  │                                                   │
+│  └────────────┘  │                                                   │
+└──────────────────┴───────────────────────────────────────────────────┘
+```
 
-| Script          | Description                              |
-|-----------------|------------------------------------------|
-| `npm run dev`   | Start Vite dev server with HMR           |
-| `npm run build` | Type-check and build for production      |
-| `npm run preview` | Preview the production build           |
-| `npm run lint`  | Run ESLint on all source files           |
+---
 
-### Server (`/server`)
+## 🗃️ State Management
 
-| Script          | Description                              |
-|-----------------|------------------------------------------|
-| `npm run dev`   | Start server with hot-reload (ts-node / nodemon) |
-| `npm run build` | Compile TypeScript to `dist/`            |
-| `npm start`     | Run compiled production build            |
+The app uses a **MobX observable singleton** (`AppStore`) — no React Context or Redux needed.
+
+| State field       | Type       | Description                                   |
+|-------------------|------------|-----------------------------------------------|
+| `dark`            | `boolean`  | Current theme (default: dark)                 |
+| `tab`             | `Tab`      | Active sidebar filter: `'active'` \| `'all'`  |
+| `modalOpen`       | `boolean`  | Whether the Add Stream modal is visible       |
+| `streams`         | `Stream[]` | Full list of registered streams               |
+
+**Computed views:**
+
+| Getter             | Returns                                                |
+|--------------------|--------------------------------------------------------|
+| `listedStreams`     | Streams shown in the sidebar (respects tab filter)     |
+| `displayedStreams`  | Streams that are both `active` and `displayed` (shown in player grid) |
+
+**Actions:** `addStream`, `deleteStream`, `deactivateStream`, `hideStream`, `toggleDark`, `setTab`, `openModal`, `closeModal`.
 
 ---
 
@@ -168,6 +217,8 @@ Node.js Server (Express)
           React player (e.g. JSMpeg) decodes in-browser
 ```
 
+> **Note:** The `StreamPlayer` currently renders a demo MP4 fallback (`BigBuckBunny`) because browsers cannot decode raw RTSP directly. In production, wire the `src` to the HLS playlist URL served by the backend.
+
 ---
 
 ## 🌐 API Endpoints
@@ -180,6 +231,27 @@ Node.js Server (Express)
 | `GET`  | `/hls/:id/index.m3u8`           | HLS playlist (m3u8)               |
 | `GET`  | `/hls/:id/:segment`             | HLS video segments (.ts)          |
 | `WS`   | `/ws/stream/:id`                | WebSocket stream endpoint         |
+
+---
+
+## 📋 Available Scripts
+
+### Client (`/client`)
+
+| Script              | Description                              |
+|---------------------|------------------------------------------|
+| `npm run dev`       | Start Vite dev server with HMR           |
+| `npm run build`     | Type-check and build for production      |
+| `npm run preview`   | Preview the production build             |
+| `npm run lint`      | Run ESLint on all source files           |
+
+### Server (`/server`)
+
+| Script          | Description                                      |
+|-----------------|--------------------------------------------------|
+| `npm run dev`   | Start server with hot-reload (ts-node / nodemon) |
+| `npm run build` | Compile TypeScript to `dist/`                    |
+| `npm start`     | Run compiled production build                    |
 
 ---
 
@@ -208,12 +280,19 @@ npm start
 | RTSP stream not loading | Verify the stream URL is accessible from the server machine |
 | CORS error in browser | Ensure the server has CORS configured for `http://localhost:5173` |
 | Port already in use | Change `PORT` in `server/.env` or kill the conflicting process |
+| Video shows demo clip | Backend HLS/WS relay not yet wired; connect `StreamPlayer` `src` to the HLS endpoint |
 
 ---
 
 ## 🗺️ Roadmap
 
-- [ ] Multi-stream grid layout (view multiple RTSP streams simultaneously)
+- [x] Component-based layout (Topbar, Sidebar, MainContent)
+- [x] MobX reactive state management
+- [x] Add / deactivate / delete stream management
+- [x] Multi-stream player grid (1-column → 2-column responsive)
+- [x] Per-player controls (fullscreen, PiP, refresh, settings, close)
+- [x] Dark / Light theme toggle
+- [ ] Wire `StreamPlayer` to live HLS endpoint from the backend
 - [ ] Stream authentication (username/password in RTSP URL)
 - [ ] Stream recording to disk
 - [ ] Docker support for easy deployment
