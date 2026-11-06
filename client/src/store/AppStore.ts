@@ -19,7 +19,7 @@ class AppStore {
   errorMessage: string | null = null
 
   constructor() {
-    makeAutoObservable(this)
+    makeAutoObservable(this, {}, { autoBind: true })
     this.init()
   }
 
