@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import healthRouter from './routes/health';
 import streamsRouter from './routes/streams';
 import { initSocketServer } from './services/socketService';
+import { streamManager } from './services/streamManager';
 
 dotenv.config();
 
@@ -17,7 +18,11 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 // Middleware
 app.use(
   cors({
-    origin: CLIENT_ORIGIN,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or same-origin)
+      if (!origin) return callback(null, true);
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
@@ -25,7 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Socket.io initialization
-const io = initSocketServer(server, [CLIENT_ORIGIN, 'http://localhost:3000', 'http://127.0.0.1:5173']);
+const io = initSocketServer(server, [CLIENT_ORIGIN, 'http://localhost:3000', 'http://127.0.0.1:5173', '*']);
 
 // Routes
 app.get('/', (_req: Request, res: Response) => {
@@ -33,11 +38,26 @@ app.get('/', (_req: Request, res: Response) => {
     name: 'RTSP Video Stream Viewer API',
     version: '1.0.0',
     status: 'running',
+    activeStreams: streamManager.getAll().filter((s) => s.status === 'streaming').length,
+    totalStreams: streamManager.getAll().length,
   });
 });
 
 app.use('/api/health', healthRouter);
 app.use('/api/streams', streamsRouter);
+
+// Graceful shutdown handling
+const handleExit = () => {
+  console.log('\n[Server] Shutting down gracefully...');
+  streamManager.cleanup();
+  server.close(() => {
+    console.log('[Server] HTTP and Socket server closed');
+    process.exit(0);
+  });
+};
+
+process.on('SIGINT', handleExit);
+process.on('SIGTERM', handleExit);
 
 // Start server
 server.listen(PORT, () => {
@@ -46,4 +66,3 @@ server.listen(PORT, () => {
 });
 
 export { app, server, io };
-
