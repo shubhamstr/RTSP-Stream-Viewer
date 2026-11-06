@@ -1,0 +1,57 @@
+###############################################
+# MediaMTX configuration for RTSP test server
+###############################################
+
+# Log level: debug, info, warn, error
+logLevel: info
+logDestinations: [stdout]
+
+# API for managing paths at runtime
+api: yes
+apiAddress: :9997
+
+# RTSP server
+rtsp: yes
+rtspAddress: :8554
+rtspEncryption: no
+
+# RTMP server (disabled)
+rtmp: no
+
+# HLS server – lets the browser pull streams via HLS too
+hls: yes
+hlsAddress: :8888
+hlsAlwaysRemux: yes
+hlsSegmentCount: 3
+hlsSegmentDuration: 1s
+hlsPartDuration: 200ms
+hlsSegmentMaxSize: 50MB
+hlsAllowOrigin: "*"
+
+# WebRTC server (disabled – not needed for basic test)
+webrtc: no
+
+# SRT (disabled)
+srt: no
+
+###############################################
+# Named paths / streams
+###############################################
+paths:
+
+  # Stream 1 – Big Buck Bunny (looping)
+  bbb:
+    source: publisher
+
+  # Stream 2 – Elephants Dream (looping)
+  elephants:
+    source: publisher
+
+  # Stream 3 – Tears of Steel (looping)
+  tears:
+    source: publisher
+
+  # Catch-all: allow any publisher to push to an unnamed path
+  "~^.*$":
+    source: publisher
+
