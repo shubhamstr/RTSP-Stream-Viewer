@@ -118,7 +118,44 @@ Ensure you have the following installed on your machine:
 - [Node.js](https://nodejs.org/) (`>= 18.x`)
 - [npm](https://www.npmjs.com/) (`>= 9.x`)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) *(recommended, to run the test RTSP video streamer)*
-- [FFmpeg](https://ffmpeg.org/download.html) *(optional, if transcoding directly on the host machine)*
+- [FFmpeg](https://ffmpeg.org/download.html) *(required for local stream transcoding and inspection)*
+
+---
+
+### 📦 Installing FFmpeg on Windows (Recommended via Winget)
+
+For local development and stream handling on Windows, installing FFmpeg via **Winget** is the simplest method—it automatically configures environment PATH variables and works seamlessly across PowerShell, Command Prompt, and Git Bash.
+
+#### Step 1: Open PowerShell
+Press <kbd>Win</kbd> + <kbd>X</kbd> and select **Terminal** or **PowerShell**. Verify Winget is present:
+```powershell
+winget --version
+```
+
+#### Step 2: Install FFmpeg
+Run the official Gyan build package:
+```powershell
+winget install -e --id Gyan.FFmpeg
+```
+
+#### Step 3: Restart Terminal & Verify Installation
+Close and reopen your terminal session, then verify:
+```powershell
+ffmpeg -version
+```
+
+#### Step 4: Verify Additional Utilities
+Verify the bundled inspection and playback tools:
+```powershell
+ffprobe -version
+ffplay -version
+```
+
+| Utility | Primary Purpose |
+|---|---|
+| `ffmpeg` | Core CLI engine to transcode, convert, demux, and stream video/audio |
+| `ffprobe` | Inspect media metadata, stream codecs, framerates, and packet headers |
+| `ffplay` | Simple media player to test and monitor raw streams and RTSP feeds |
 
 ---
 
