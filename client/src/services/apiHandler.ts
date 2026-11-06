@@ -19,7 +19,7 @@ export const apiHandler = {
    * Fetch all RTSP streams from the server
    */
   getStreams: async (): Promise<Stream[]> => {
-    const { data } = await apiClient.get<{ streams?: Stream[] } | Stream[]>('/api/streams')
+    const { data } = await apiClient.get<{ success?: boolean; streams?: Stream[] } | Stream[]>('/api/streams')
     if (Array.isArray(data)) return data
     return data.streams ?? []
   },
@@ -28,24 +28,45 @@ export const apiHandler = {
    * Fetch a single stream by ID
    */
   getStreamById: async (id: string): Promise<Stream> => {
-    const { data } = await apiClient.get<Stream>(`/api/streams/${id}`)
-    return data
+    const { data } = await apiClient.get<{ success?: boolean; stream?: Stream } | Stream>(`/api/streams/${id}`)
+    if ('stream' in data && data.stream) return data.stream
+    return data as Stream
   },
 
   /**
    * Add / Register a new stream
    */
   createStream: async (payload: CreateStreamPayload): Promise<Stream> => {
-    const { data } = await apiClient.post<Stream>('/api/streams', payload)
-    return data
+    const { data } = await apiClient.post<{ success?: boolean; stream?: Stream } | Stream>('/api/streams', payload)
+    if ('stream' in data && data.stream) return data.stream
+    return data as Stream
+  },
+
+  /**
+   * Start streaming RTSP feed on backend via FFmpeg
+   */
+  startStream: async (id: string): Promise<Stream> => {
+    const { data } = await apiClient.post<{ success?: boolean; stream?: Stream } | Stream>(`/api/streams/${id}/start`)
+    if ('stream' in data && data.stream) return data.stream
+    return data as Stream
+  },
+
+  /**
+   * Stop streaming RTSP feed on backend
+   */
+  stopStream: async (id: string): Promise<Stream> => {
+    const { data } = await apiClient.post<{ success?: boolean; stream?: Stream } | Stream>(`/api/streams/${id}/stop`)
+    if ('stream' in data && data.stream) return data.stream
+    return data as Stream
   },
 
   /**
    * Update an existing stream's configuration or status
    */
   updateStream: async (id: string, payload: UpdateStreamPayload): Promise<Stream> => {
-    const { data } = await apiClient.patch<Stream>(`/api/streams/${id}`, payload)
-    return data
+    const { data } = await apiClient.patch<{ success?: boolean; stream?: Stream } | Stream>(`/api/streams/${id}`, payload)
+    if ('stream' in data && data.stream) return data.stream
+    return data as Stream
   },
 
   /**
@@ -84,4 +105,3 @@ export const apiHandler = {
 }
 
 export default apiHandler
-

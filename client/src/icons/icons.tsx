@@ -78,6 +78,19 @@ export const CloseIcon = svg(
 
 // ─── Player Controls ──────────────────────────────────────────────────────────
 
+export const PlayIcon = svg(
+  <polygon points="5 3 19 12 5 21 5 3" />,
+  13,
+)
+
+export const PauseIcon = svg(
+  <>
+    <rect x="6" y="4" width="4" height="16" />
+    <rect x="14" y="4" width="4" height="16" />
+  </>,
+  13,
+)
+
 export const FullscreenIcon = svg(
   <>
     <polyline points="15 3 21 3 21 9" />
@@ -112,4 +125,3 @@ export const GearIcon = svg(
   </>,
   13,
 )
-
