@@ -106,13 +106,15 @@ export const FullscreenIcon = svg(
   13,
 )
 
-export const SideBySideIcon = svg(
+export const PipIcon = svg(
   <>
-    <rect x="3" y="3" width="7" height="18" rx="1" />
-    <rect x="14" y="3" width="7" height="18" rx="1" />
+    <path d="M21 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" />
+    <rect x="12" y="13" width="10" height="7" rx="1" />
   </>,
   13,
 )
+
+export const SideBySideIcon = PipIcon
 
 export const RefreshIcon = svg(
   <>

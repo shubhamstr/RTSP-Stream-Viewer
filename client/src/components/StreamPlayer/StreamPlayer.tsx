@@ -6,9 +6,9 @@ import {
   FullscreenIcon,
   GearIcon,
   PauseIcon,
+  PipIcon,
   PlayIcon,
   RefreshIcon,
-  SideBySideIcon,
 } from '../../icons/icons'
 import type { Stream, StreamStatus } from '../../types'
 import getSocket from '../../services/socketService'
@@ -232,7 +232,7 @@ const StreamPlayer = observer(({ stream }: StreamPlayerProps) => {
             title="Picture-in-picture"
             onClick={handlePiP}
           >
-            <SideBySideIcon />
+            <PipIcon />
           </button>
 
           {/* Fullscreen */}
@@ -244,8 +244,12 @@ const StreamPlayer = observer(({ stream }: StreamPlayerProps) => {
             <FullscreenIcon />
           </button>
 
-          {/* Settings placeholder */}
-          <button className="icon-btn" title="Stream settings">
+          {/* Stream settings */}
+          <button
+            className="icon-btn"
+            title="Stream settings"
+            onClick={() => appStore.openModal(stream)}
+          >
             <GearIcon />
           </button>
 

@@ -10,8 +10,9 @@ class AppStore {
   // ── Sidebar tab ───────────────────────────────────────────────────────────
   tab: Tab = 'all'
 
-  // ── Add-stream modal ──────────────────────────────────────────────────────
+  // ── Add/Edit stream modal ────────────────────────────────────────────────
   modalOpen = false
+  editingStream: Stream | null = null
 
   // ── Streams ───────────────────────────────────────────────────────────────
   streams: Stream[] = []
@@ -80,12 +81,14 @@ class AppStore {
   }
 
   // ── Modal ─────────────────────────────────────────────────────────────────
-  openModal() {
+  openModal(stream?: Stream) {
+    this.editingStream = stream || null
     this.modalOpen = true
   }
 
   closeModal() {
     this.modalOpen = false
+    this.editingStream = null
   }
 
   // ── Streams API Actions ───────────────────────────────────────────────────
@@ -133,6 +136,32 @@ class AppStore {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to add stream'
       console.error('[AppStore] addStream error:', err)
+      runInAction(() => {
+        this.errorMessage = msg
+      })
+      throw err
+    }
+  }
+
+  /**
+   * Update an existing stream's configuration (name, url)
+   */
+  async updateStream(id: string, payload: { name?: string; url?: string }) {
+    this.errorMessage = null
+    try {
+      const updated = await apiHandler.updateStream(id, payload)
+      runInAction(() => {
+        const index = this.streams.findIndex((s) => s.id === id)
+        if (index !== -1) {
+          this.streams[index] = { ...this.streams[index], ...updated }
+        }
+        this.modalOpen = false
+        this.editingStream = null
+      })
+      return updated
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to update stream'
+      console.error('[AppStore] updateStream error:', err)
       runInAction(() => {
         this.errorMessage = msg
       })

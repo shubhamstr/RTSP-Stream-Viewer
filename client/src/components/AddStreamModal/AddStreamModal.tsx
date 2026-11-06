@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import { appStore } from '../../store/AppStore'
 import { CheckIcon, CloseIcon, PlusCircleIcon } from '../../icons/icons'
@@ -28,6 +28,7 @@ export const DEFAULT_STREAMS: DefaultStreamOption[] = [
 ]
 
 const AddStreamModal = observer(() => {
+  const isEditing = Boolean(appStore.editingStream)
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
   const [username, setUsername] = useState('')
@@ -35,6 +36,30 @@ const AddStreamModal = observer(() => {
   const [loading, setLoading] = useState(false)
   const [addingUrl, setAddingUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (appStore.editingStream) {
+      const s = appStore.editingStream
+      setName(s.name)
+      const credMatch = s.url.match(/^([a-zA-Z0-9+.-]+:\/\/)([^:]+):([^@]+)@(.*)$/)
+      if (credMatch) {
+        setUrl(`${credMatch[1]}${credMatch[4]}`)
+        setUsername(decodeURIComponent(credMatch[2]))
+        setPassword(decodeURIComponent(credMatch[3]))
+      } else {
+        setUrl(s.url)
+        setUsername('')
+        setPassword('')
+      }
+      setError(null)
+    } else {
+      setName('')
+      setUrl('')
+      setUsername('')
+      setPassword('')
+      setError(null)
+    }
+  }, [appStore.editingStream])
 
   const isStreamInList = (streamUrl: string) => {
     const target = streamUrl.trim().toLowerCase()
@@ -130,7 +155,7 @@ const AddStreamModal = observer(() => {
     return finalUrl
   }
 
-  // Custom stream addition from form fields
+  // Form submission: updates existing stream if in edit mode, otherwise adds new stream
   const handleAddCustom = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     if (!name.trim() || !url.trim() || loading || addingUrl) return
@@ -141,10 +166,20 @@ const AddStreamModal = observer(() => {
     setError(null)
 
     try {
-      await appStore.addStream(name.trim(), finalUrl)
+      if (appStore.editingStream) {
+        await appStore.updateStream(appStore.editingStream.id, {
+          name: name.trim(),
+          url: finalUrl,
+        })
+      } else {
+        await appStore.addStream(name.trim(), finalUrl)
+      }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } }; message?: string }
-      const msg = axiosErr.response?.data?.message || axiosErr.message || 'Failed to connect to stream'
+      const msg =
+        axiosErr.response?.data?.message ||
+        axiosErr.message ||
+        (isEditing ? 'Failed to update stream' : 'Failed to connect to stream')
       setError(msg)
     } finally {
       setLoading(false)
@@ -159,9 +194,13 @@ const AddStreamModal = observer(() => {
         {/* Header */}
         <div className="modal-header">
           <div>
-            <h3 className="modal-title">Add RTSP Stream</h3>
+            <h3 className="modal-title">
+              {isEditing ? 'Stream Settings' : 'Add RTSP Stream'}
+            </h3>
             <p className="modal-sub">
-              Select a preconfigured stream on the left or configure a custom RTSP feed on the right.
+              {isEditing
+                ? `Update configuration and RTSP feed for "${appStore.editingStream?.name}".`
+                : 'Select a preconfigured stream on the left or configure a custom RTSP feed on the right.'}
             </p>
           </div>
           <button className="icon-btn" onClick={() => appStore.closeModal()} aria-label="Close modal">
@@ -275,12 +314,18 @@ const AddStreamModal = observer(() => {
             <span className="divider-badge">or</span>
           </div>
 
-          {/* Right Column: Custom Stream Form */}
+          {/* Right Column: Custom Stream / Edit Form */}
           <div className="modal-column modal-column-right">
             <div className="modal-column-header">
               <div>
-                <span className="modal-section-title">Custom Stream</span>
-                <p className="modal-column-sub">Enter details for any RTSP camera or server</p>
+                <span className="modal-section-title">
+                  {isEditing ? 'Stream Configuration' : 'Custom Stream'}
+                </span>
+                <p className="modal-column-sub">
+                  {isEditing
+                    ? 'Modify the stream name, address, or credentials'
+                    : 'Enter details for any RTSP camera or server'}
+                </p>
               </div>
               {isFormDirty && (
                 <button
@@ -376,7 +421,15 @@ const AddStreamModal = observer(() => {
                   className="btn-primary"
                   disabled={!name.trim() || !url.trim() || loading || !!addingUrl}
                 >
-                  <PlusCircleIcon /> {loading ? 'Adding Stream...' : 'Add Custom Stream'}
+                  {isEditing ? (
+                    <>
+                      <CheckIcon /> {loading ? 'Saving Changes...' : 'Save Settings'}
+                    </>
+                  ) : (
+                    <>
+                      <PlusCircleIcon /> {loading ? 'Adding Stream...' : 'Add Custom Stream'}
+                    </>
+                  )}
                 </button>
               </div>
             </form>
