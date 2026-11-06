@@ -257,7 +257,10 @@ const StreamPlayer = observer(({ stream }: StreamPlayerProps) => {
           <button
             className="icon-btn icon-btn--close"
             title="Hide from view"
-            onClick={() => appStore.hideStream(stream.id)}
+            onClick={(e) => {
+              e.stopPropagation()
+              appStore.hideStream(stream.id)
+            }}
           >
             <CloseIcon />
           </button>

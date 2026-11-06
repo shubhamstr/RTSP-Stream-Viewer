@@ -193,8 +193,10 @@ class AppStore {
 
     try {
       if (nextDisplayed) {
+        await apiHandler.updateStream(id, { active: true, displayed: true })
         await apiHandler.startStream(id)
       } else {
+        await apiHandler.updateStream(id, { displayed: false })
         await apiHandler.stopStream(id)
       }
     } catch (err: unknown) {
@@ -209,19 +211,23 @@ class AppStore {
   }
 
   async activateStream(id: string) {
-    const s = this.streams.find((s) => s.id === id)
-    if (s) {
-      s.active = true
-      s.displayed = true
-      s.status = 'starting'
-      s.error = undefined
-    }
+    runInAction(() => {
+      const s = this.streams.find((s) => s.id === id)
+      if (s) {
+        s.active = true
+        s.displayed = true
+        s.status = 'starting'
+        s.error = undefined
+      }
+    })
 
     try {
+      await apiHandler.updateStream(id, { active: true, displayed: true })
       await apiHandler.startStream(id)
     } catch (err: unknown) {
       console.error(`[AppStore] activateStream error for ${id}:`, err)
       runInAction(() => {
+        const s = this.streams.find((s) => s.id === id)
         if (s) {
           s.status = 'error'
           s.error = err instanceof Error ? err.message : 'Failed to activate stream'
@@ -231,29 +237,34 @@ class AppStore {
   }
 
   async deactivateStream(id: string) {
-    const s = this.streams.find((s) => s.id === id)
-    if (s) {
-      s.active = false
-      s.displayed = false
-      s.status = 'stopped'
-    }
+    runInAction(() => {
+      const s = this.streams.find((s) => s.id === id)
+      if (s) {
+        s.active = false
+        s.displayed = false
+        s.status = 'stopped'
+      }
+    })
 
     try {
-      await apiHandler.stopStream(id)
       await apiHandler.updateStream(id, { active: false, displayed: false })
+      await apiHandler.stopStream(id)
     } catch (err) {
       console.error(`[AppStore] deactivateStream error for ${id}:`, err)
     }
   }
 
   async hideStream(id: string) {
-    const s = this.streams.find((s) => s.id === id)
-    if (s) {
-      s.displayed = false
-      s.status = 'stopped'
-    }
+    runInAction(() => {
+      const s = this.streams.find((s) => s.id === id)
+      if (s) {
+        s.displayed = false
+        s.status = 'stopped'
+      }
+    })
 
     try {
+      await apiHandler.updateStream(id, { displayed: false })
       await apiHandler.stopStream(id)
     } catch (err) {
       console.error(`[AppStore] hideStream error for ${id}:`, err)
