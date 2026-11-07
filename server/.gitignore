@@ -2,4 +2,7 @@ node_modules
 dist
 .env
 npm-debug.log*
-
+logs/
+*.log
+.*audit.json
+*.audit.json

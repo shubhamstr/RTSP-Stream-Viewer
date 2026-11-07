@@ -349,22 +349,30 @@ RTSP-Video-Stream-Viewer/
 ## 12. Logging
 
 ### `[Current Convention]`
-- **Prefixed Console Logging**:
-  - All backend log entries use consistent module-identifying tags:
+- **Structured Winston Logging with Date-Based Daily Rotation**:
+  - Backend uses `winston` and `winston-daily-rotate-file` in `server/src/services/logger.ts`.
+  - Date-based log filenames: `combined-%DATE%.log` and `error-%DATE%.log` (where `%DATE%` is `YYYY-MM-DD`).
+  - Automated rotation & retention: Logs rotate daily and older logs are automatically deleted after retention period (`LOG_MAX_FILES`, default: `14d`). Size-based rotation cap default is `20m`.
+  - Module-identifying tags:
     - `[Server]` for server startup, shutdown, and route mounting.
     - `[StreamManager]` for stream creation, start, stop, exit, and frame statistics.
     - `[Socket]` for client connection, disconnection, and room joins.
+    - `[HTTP]` for incoming requests, status codes, and response times.
+    - `[Security]` for access attempts to protected logs.
     - `[API Error]` for client Axios interceptor error output.
     - `[AppStore]` for client state initialization or socket fallback warnings.
 - **Log Levels**:
-  - `console.log()` for operational lifecycle messages (start, stop, connect).
-  - `console.warn()` for non-fatal irregularities (socket reconnection, buffer resets).
-  - `console.error()` for process crashes, network failures, and 500 errors.
+  - `logger.debug()` for fine-grained debugging (socket requests, health pings).
+  - `logger.info()` for operational lifecycle messages (start, stop, connect, add stream).
+  - `logger.warn()` for non-fatal irregularities (not found routes, socket reconnection, buffer resets).
+  - `logger.error()` for process crashes, network failures, and 500 errors.
 - **Credential Sanitization in Logs**:
-  - Every log printing a stream URL must wrap it with `sanitizeStreamUrl(url)`.
+  - Every log printing a stream URL or auth token automatically passes through `sanitize(text)` to mask passwords (`rtsp://user:***@host`).
+- **Security & Access Control**:
+  - `protectLogsMiddleware` prevents any public HTTP access to `/logs` or `*.log` files with `403 Forbidden`.
 
 ### `[Recommended Improvement]`
-- In production, integrate a structured JSON logger (such as Pino or Winston) with configurable log levels (`LOG_LEVEL=info|debug|warn|error`).
+- Provide centralized log aggregation or export (e.g. Loki, Datadog) if deploying to distributed container environments.
 
 ---
 
@@ -506,6 +514,11 @@ RTSP-Video-Stream-Viewer/
   | `PORT` | `4000` | Express HTTP and Socket.IO server listening port |
   | `CLIENT_ORIGIN` | `http://localhost:5173` | Allowed frontend origin for CORS |
   | `FFMPEG_PATH` | *(unset)* | Path to custom FFmpeg binary (optional fallback) |
+  | `LOG_LEVEL` | `debug` | Minimum logging level (`debug`, `info`, `warn`, `error`) |
+  | `LOGS_DIR` | `./logs` | Directory path where rotational log files are saved |
+  | `LOG_MAX_FILES` | `14d` | Retention duration for log rotation before auto-deletion |
+  | `LOG_MAX_SIZE` | `20m` | Maximum size threshold per log file before rotation |
+  | `LOG_ZIPPED_ARCHIVE` | `false` | Whether to gzip archived rotated log files |
 
 - **Client Variables (`client/.env`)**:
 
@@ -530,7 +543,7 @@ RTSP-Video-Stream-Viewer/
 - **Package Managers**: Standard `npm` with `package-lock.json` committed in both `/client` and `/server`.
 - **Existing Libraries**:
   - Client: `react`, `react-dom`, `mobx`, `mobx-react-lite`, `axios`, `socket.io-client`.
-  - Server: `express`, `socket.io`, `cors`, `dotenv`, `ffmpeg-static`.
+  - Server: `express`, `socket.io`, `cors`, `dotenv`, `ffmpeg-static`, `winston`, `winston-daily-rotate-file`.
 - **Pre-Installation Check**:
   - Before running `npm install <package>`, agents MUST verify whether an existing dependency or built-in language feature covers the need.
   - Examples:

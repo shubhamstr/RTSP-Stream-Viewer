@@ -1,6 +1,7 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { streamManager } from './streamManager';
+import { logger } from './logger';
 
 export const initSocketServer = (httpServer: HttpServer, allowedOrigin: string | string[]) => {
   const io = new Server(httpServer, {
@@ -17,7 +18,7 @@ export const initSocketServer = (httpServer: HttpServer, allowedOrigin: string |
   streamManager.setSocketServer(io);
 
   io.on('connection', (socket: Socket) => {
-    console.log(`[Socket.io] Client connected: ${socket.id}`);
+    logger.info('Socket', `Client connected: ${socket.id} (IP: ${socket.handshake.address})`);
 
     // Initial ping/pong
     socket.on('ping', () => {
@@ -26,6 +27,7 @@ export const initSocketServer = (httpServer: HttpServer, allowedOrigin: string |
 
     // Client requests current list of streams
     socket.on('stream:get_all', () => {
+      logger.debug('Socket', `Client ${socket.id} requested stream list`);
       socket.emit('stream:list', streamManager.getAll());
     });
 
@@ -36,7 +38,7 @@ export const initSocketServer = (httpServer: HttpServer, allowedOrigin: string |
 
       const room = `stream:${streamId}`;
       socket.join(room);
-      console.log(`[Socket.io] Socket ${socket.id} joined ${room}`);
+      logger.info('Socket', `Socket ${socket.id} joined room ${room}`);
 
       const stream = streamManager.getById(streamId);
       if (stream) {
@@ -53,7 +55,7 @@ export const initSocketServer = (httpServer: HttpServer, allowedOrigin: string |
           try {
             await streamManager.startStream(streamId);
           } catch (err) {
-            console.error(`[Socket.io] Auto-start failed for ${streamId}:`, err);
+            logger.error('Socket', `Auto-start failed for stream ${streamId}:`, err);
           }
         }
       }
@@ -66,17 +68,19 @@ export const initSocketServer = (httpServer: HttpServer, allowedOrigin: string |
 
       const room = `stream:${streamId}`;
       socket.leave(room);
-      console.log(`[Socket.io] Socket ${socket.id} left ${room}`);
+      logger.info('Socket', `Socket ${socket.id} left room ${room}`);
     });
 
     // Client requests stream start (play)
     socket.on('stream:start', async (data: { streamId: string }) => {
       const { streamId } = data || {};
       if (!streamId) return;
+      logger.info('Socket', `Client ${socket.id} requested start for stream ${streamId}`);
       try {
         await streamManager.startStream(streamId);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
+        logger.error('Socket', `Error starting stream ${streamId}:`, message);
         socket.emit('stream:error', { streamId, error: message });
       }
     });
@@ -85,11 +89,12 @@ export const initSocketServer = (httpServer: HttpServer, allowedOrigin: string |
     socket.on('stream:stop', (data: { streamId: string }) => {
       const { streamId } = data || {};
       if (!streamId) return;
+      logger.info('Socket', `Client ${socket.id} requested stop for stream ${streamId}`);
       streamManager.stopStream(streamId);
     });
 
     socket.on('disconnect', (reason) => {
-      console.log(`[Socket.io] Client disconnected: ${socket.id} (${reason})`);
+      logger.info('Socket', `Client disconnected: ${socket.id} (${reason})`);
     });
   });
 

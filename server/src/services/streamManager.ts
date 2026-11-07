@@ -3,6 +3,7 @@ import fs from 'fs';
 import ffmpegStatic from 'ffmpeg-static';
 import { Server as SocketIOServer } from 'socket.io';
 import { StreamItem, CreateStreamDto, UpdateStreamDto } from '../types/stream';
+import { logger } from './logger';
 
 // Determine FFmpeg binary location
 const resolveFfmpegPath = (): string => {
@@ -16,10 +17,10 @@ const resolveFfmpegPath = (): string => {
 };
 
 const FFMPEG_BIN = resolveFfmpegPath();
-console.log(`[StreamManager] Using FFmpeg binary: ${FFMPEG_BIN}`);
+logger.info('StreamManager', `Using FFmpeg binary: ${FFMPEG_BIN}`);
 
 const sanitizeStreamUrl = (url: string): string => {
-  return url.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@');
+  return logger.sanitize(url);
 };
 
 interface ActiveProcess {
@@ -64,12 +65,12 @@ export class StreamManager {
     };
 
     this.streams.set(id, newStream);
-    console.log(`[StreamManager] Added new stream ${id}: "${newStream.name}" (${sanitizeStreamUrl(newStream.url)})`);
+    logger.info('StreamManager', `Added new stream ${id}: "${newStream.name}" (${sanitizeStreamUrl(newStream.url)})`);
 
     // Auto-start if requested active and displayed
     if (newStream.active && newStream.displayed) {
       this.startStream(id).catch((err) => {
-        console.error(`[StreamManager] Error starting new stream ${id}:`, err);
+        logger.error('StreamManager', `Error starting new stream ${id}:`, err);
       });
     }
 
@@ -83,6 +84,7 @@ export class StreamManager {
 
     if (dto.name !== undefined) stream.name = dto.name;
     if (dto.url !== undefined && dto.url !== stream.url) {
+      logger.info('StreamManager', `Updating stream ${id} URL from ${sanitizeStreamUrl(stream.url)} to ${sanitizeStreamUrl(dto.url)}`);
       stream.url = dto.url;
       // If URL changed while running, restart process
       if (this.processes.has(id)) {
@@ -119,7 +121,7 @@ export class StreamManager {
     if (!this.streams.has(id)) return false;
     this.stopStream(id);
     this.streams.delete(id);
-    console.log(`[StreamManager] Deleted stream ${id}`);
+    logger.info('StreamManager', `Deleted stream ${id}`);
     this.broadcastStreamsList();
     return true;
   }
@@ -132,7 +134,7 @@ export class StreamManager {
 
     // Already running or starting
     if (this.processes.has(id)) {
-      console.log(`[StreamManager] Stream ${id} is already running/starting`);
+      logger.debug('StreamManager', `Stream ${id} is already running/starting`);
       return stream;
     }
 
@@ -142,7 +144,7 @@ export class StreamManager {
     stream.active = true;
     this.broadcastStreamStatus(id);
 
-    console.log(`[StreamManager] Starting FFmpeg process for stream ${id} (${sanitizeStreamUrl(stream.url)})`);
+    logger.info('StreamManager', `Starting FFmpeg process for stream ${id} (${sanitizeStreamUrl(stream.url)})`);
 
     const isRtsp = stream.url.toLowerCase().startsWith('rtsp://') || stream.url.toLowerCase().startsWith('rtsps://');
     const args: string[] = [
@@ -243,13 +245,13 @@ export class StreamManager {
           activeItem.lastError = line;
           // Only log real errors or connection warnings
           if (line.includes('Connection refused') || line.includes('Server returned') || line.includes('error')) {
-            console.warn(`[FFmpeg ${id} Warning] ${line}`);
+            logger.warn('FFmpeg', `[Stream ${id}] ${line}`);
           }
         }
       });
 
       child.on('error', (err: Error) => {
-        console.error(`[FFmpeg ${id}] Failed to spawn process:`, err.message);
+        logger.error('FFmpeg', `[Stream ${id}] Failed to spawn process: ${err.message}`);
         const currentItem = this.processes.get(id);
         if (currentItem && currentItem.process === child) {
           this.handleProcessError(id, `FFmpeg failed to start: ${err.message}`);
@@ -257,7 +259,7 @@ export class StreamManager {
       });
 
       child.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
-        console.log(`[FFmpeg ${id}] Process exited with code ${code}, signal ${signal}`);
+        logger.info('FFmpeg', `[Stream ${id}] Process exited with code ${code}, signal ${signal}`);
 
         // Guard against race conditions: only manage if this is the active process for this stream
         const currentItem = this.processes.get(id);
@@ -311,7 +313,7 @@ export class StreamManager {
 
     const activeItem = this.processes.get(id);
     if (activeItem) {
-      console.log(`[StreamManager] Stopping FFmpeg process for stream ${id}`);
+      logger.info('StreamManager', `Stopping FFmpeg process for stream ${id}`);
       activeItem.isTerminatedByUser = true;
       this.processes.delete(id);
 
@@ -328,7 +330,7 @@ export class StreamManager {
           }
         }, 1500);
       } catch (err) {
-        console.error(`[StreamManager] Error terminating process ${id}:`, err);
+        logger.error('StreamManager', `Error terminating process ${id}:`, err);
       }
     }
 
@@ -342,7 +344,7 @@ export class StreamManager {
 
     stream.status = 'error';
     stream.error = errorMessage;
-    console.error(`[StreamManager] Stream ${id} encountered error: ${errorMessage}`);
+    logger.error('StreamManager', `Stream ${id} encountered error: ${errorMessage}`);
 
     if (this.io) {
       this.io.to(`stream:${id}`).emit('stream:error', {
@@ -374,7 +376,7 @@ export class StreamManager {
   }
 
   public cleanup() {
-    console.log('[StreamManager] Cleaning up all streaming processes...');
+    logger.info('StreamManager', 'Cleaning up all streaming processes...');
     for (const [id, item] of this.processes.entries()) {
       try {
         item.process.kill('SIGKILL');

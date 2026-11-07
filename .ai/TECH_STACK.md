@@ -25,6 +25,8 @@
 | **Express** | `^4.21.2` | Fast, unopinionated web framework for Node.js. Serves REST endpoints (`/api/streams`, `/api/health`, `/`). |
 | **Socket.IO** | `^4.8.1` | WebSocket abstraction server supporting rooms, binary payload broadcasting (`maxHttpBufferSize: 1e7`), and fallback transports. |
 | **ffmpeg-static** | `^5.3.0` | Bundled static FFmpeg binaries for cross-platform execution (Windows, Linux, macOS) without requiring manual system FFmpeg installs. |
+| **winston** | `^3.19.0` | Enterprise logging framework with custom formatting, multi-transport dispatch, and sensitive credential masking. |
+| **winston-daily-rotate-file** | `^5.0.0` | Date-based rotational file transport (`YYYY-MM-DD`) with automatic purging of older log files (`maxFiles: 14d`). |
 | **cors** | `^2.8.5` | Express middleware to enable Cross-Origin Resource Sharing between client (`http://localhost:5173`) and server (`http://localhost:4000`). |
 | **dotenv** | `^16.4.7` | Loads environment variables from `.env` into `process.env`. |
 | **nodemon** | `^3.1.9` | Development utility monitoring files in `src/` and restarting the server process on changes. |

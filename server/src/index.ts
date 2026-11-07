@@ -1,11 +1,12 @@
 import http from 'http';
-import express, { Application, Request, Response } from 'express';
+import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import healthRouter from './routes/health';
 import streamsRouter from './routes/streams';
 import { initSocketServer } from './services/socketService';
 import { streamManager } from './services/streamManager';
+import { logger, protectLogsMiddleware, requestLoggerMiddleware } from './services/logger';
 
 dotenv.config();
 
@@ -15,7 +16,13 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 4000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
-// Middleware
+// Security Middleware: Strictly hide and protect logs folder from public HTTP access
+app.use(protectLogsMiddleware);
+
+// Request Logging Middleware: Record incoming requests and response timings
+app.use(requestLoggerMiddleware);
+
+// CORS Middleware
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -47,7 +54,8 @@ app.use('/api/health', healthRouter);
 app.use('/api/streams', streamsRouter);
 
 // 404 handler for unknown routes
-app.use((_req: Request, res: Response) => {
+app.use((req: Request, res: Response) => {
+  logger.warn('Router', `Endpoint not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     success: false,
     message: 'API endpoint not found',
@@ -55,31 +63,42 @@ app.use((_req: Request, res: Response) => {
 });
 
 // Centralized error handling middleware
-app.use((err: Error, _req: Request, res: Response, _next: express.NextFunction) => {
-  console.error('[Server Error]', err);
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  logger.error('Server', 'Unhandled error encountered in Express pipeline:', err);
   res.status(500).json({
     success: false,
     message: err.message || 'Internal server error',
   });
 });
 
+// Uncaught exception and unhandled rejection safety
+process.on('uncaughtException', (err: Error) => {
+  logger.error('Server', 'Uncaught Exception detected:', err);
+});
+
+process.on('unhandledRejection', (reason: unknown) => {
+  logger.error('Server', 'Unhandled Promise Rejection detected:', reason);
+});
+
 // Graceful shutdown handling
-const handleExit = () => {
-  console.log('\n[Server] Shutting down gracefully...');
+const handleExit = (signal: string) => {
+  logger.info('Server', `Received ${signal}. Shutting down gracefully...`);
   streamManager.cleanup();
-  server.close(() => {
-    console.log('[Server] HTTP and Socket server closed');
+  server.close(async () => {
+    logger.info('Server', 'HTTP and Socket server closed');
+    await logger.close();
     process.exit(0);
   });
 };
 
-process.on('SIGINT', handleExit);
-process.on('SIGTERM', handleExit);
+process.on('SIGINT', () => handleExit('SIGINT'));
+process.on('SIGTERM', () => handleExit('SIGTERM'));
 
 // Start server
 server.listen(PORT, () => {
-  console.log(`🚀 Server listening on http://localhost:${PORT}`);
-  console.log(`🔌 Socket.io ready and listening for connections`);
+  logger.info('Server', `🚀 Server listening on http://localhost:${PORT}`);
+  logger.info('Server', `🔌 Socket.io ready and listening for connections`);
+  logger.info('Server', `📁 Logging initialized. Saving to: ${logger.getLogsDirectory()}`);
 });
 
 export { app, server, io };
