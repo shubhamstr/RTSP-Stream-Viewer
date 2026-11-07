@@ -17,6 +17,10 @@
 | **Dark / Light Theme Toggle** | Frontend: [`client/src/components/layout/Topbar.tsx`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/components/layout/Topbar.tsx)<br>[`client/src/App.css`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/App.css) | MobX `dark` observable | Complete |
 | **Synthetic RTSP Video Streamer** | Ingestion: [`custom-video-streamer/docker-compose.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/custom-video-streamer/docker-compose.yml) | Docker, MediaMTX, LinuxServer FFmpeg | Complete |
 | **Server Health Monitoring** | Backend: [`server/src/routes/health.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/routes/health.ts) | Express Router | Complete |
+| **Structured Winston Logging & Rotation** | Backend: [`server/src/services/logger.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/services/logger.ts) | `winston`, `winston-daily-rotate-file` | Complete |
+| **HTTP Request & Security Middleware** | Backend: [`server/src/services/logger.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/services/logger.ts)<br>[`server/src/index.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/index.ts) | Express Middleware | Complete |
+| **Client Dockerization & AWS CI/CD** | Infrastructure: [`client/Dockerfile`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/Dockerfile)<br>[`.github/workflows/aws-deploy-client.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/.github/workflows/aws-deploy-client.yml) | Docker, GitHub Actions, AWS ECR/EC2 | Complete |
+| **Client Error & URL Validation Helpers** | Frontend: [`client/src/utils/error.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/utils/error.ts)<br>[`client/src/utils/url.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/utils/url.ts) | TypeScript | Complete |
 
 ---
 

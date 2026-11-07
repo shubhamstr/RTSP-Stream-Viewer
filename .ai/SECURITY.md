@@ -6,6 +6,7 @@
 |---|---|---|
 | **Frontend Application** | None. No login, session cookie, or token-based auth. | Medium (suitable for internal dev, not public web) |
 | **Backend REST API** | None. All endpoints (`/api/streams`, `/api/health`) are open. | Medium |
+| **Server Log Files** | Protected via `protectLogsMiddleware` (returns `403 Forbidden` on any HTTP access to `/logs` or `*.log`). | Low / Protected |
 | **Socket.IO Server** | None. Any client can connect and join any stream room. | Medium |
 | **RTSP Stream Sources** | Basic/Digest auth via URL credentials (`rtsp://user:pass@host:port/path`). | Low / Standard for RTSP |
 | **MediaMTX Relay** | Internal YAML credentials: `viewer:viewer_password_123` (read), `publisher:publish_password_123` (publish), `apiuser:api_password_123` (API). | Low (local demo) |
@@ -16,18 +17,14 @@
 
 ### 2.1 Passwords in URLs
 - **Current Practice**: RTSP streams often require credentials formatted as `rtsp://<user>:<password>@<host>:<port>/<path>`.
-- **Backend Log Sanitization**: [`server/src/services/streamManager.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/services/streamManager.ts#L21-L23) masks credentials when printing to server console using:
-  ```typescript
-  const sanitizeStreamUrl = (url: string): string => {
-    return url.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@');
-  };
-  ```
+- **Backend Log Sanitization**: Both [`server/src/services/streamManager.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/services/streamManager.ts#L21-L23) and the enterprise logging service [`server/src/services/logger.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/services/logger.ts) sanitize all logged strings and metadata. Passwords in URLs are automatically masked to `rtsp://$1:***@` and Bearer tokens are redacted via regular expression transforms before any log is written to console or disk.
+- **Log Files Protection**: Direct public HTTP requests to the server's `/logs` directory or any `*.log` files are intercepted by `protectLogsMiddleware` in `server/src/index.ts` and rejected with `403 Forbidden`.
 - **Known Risk (Frontend Exposure)**: In [`client/src/components/StreamPlayer/StreamPlayer.tsx`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/components/StreamPlayer/StreamPlayer.tsx) and [`client/src/components/StreamCard/StreamCard.tsx`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/components/StreamCard/StreamCard.tsx), `stream.url` is rendered in DOM text and `title="..."` attributes. If credentials are included in `stream.url`, they are visible in plaintext in the browser DOM and hover tooltips.
 
 ### 2.2 Environment Variables
-- `server/.env` contains `PORT=4000` and `CLIENT_ORIGIN=http://localhost:5173`.
+- `server/.env` contains `PORT=4000`, `CLIENT_ORIGIN=http://localhost:5173`, and logging configurations (`LOG_LEVEL`, `LOGS_DIR`, `LOG_MAX_FILES`, `LOG_MAX_SIZE`, `LOG_ZIPPED_ARCHIVE`).
 - `client/.env` contains `VITE_API_URL=http://localhost:4000` and `VITE_WS_URL=ws://localhost:4000`.
-- No sensitive keys or production secrets are currently managed.
+- No sensitive production secrets or private API keys are checked into source control (`.gitignore` protects local `.env` and `.log` files).
 
 ---
 

@@ -56,15 +56,21 @@ Maintain the exact established directory layouts:
 RTSP-Video-Stream-Viewer/
 ├── .ai/                            # Project knowledge base & AI rules
 │   ├── AI_RULES.md                 # Permanent rules for AI agents (this file)
+│   ├── AI_TASK_PROMPT.md           # Standard phased task prompt template
 │   ├── API.md                      # REST & Socket.IO specification
 │   ├── ARCHITECTURE.md             # System design & streaming pipeline
 │   ├── CODING_STANDARDS.md         # Coding conventions & patterns
 │   ├── DATABASE.md                 # In-memory schema & storage roadmap
 │   ├── DEVELOPMENT.md              # Setup, commands & deployment
 │   ├── FEATURES.md                 # Feature breakdown & roadmap
+│   ├── NEW_FEATURE_PROMPT.md       # New feature prompt template
 │   ├── PROJECT.md                  # Scope, purpose & use cases
 │   ├── SECURITY.md                 # Security analysis & mitigations
-│   └── TECH_STACK.md               # Libraries & technical rationale
+│   ├── TECH_STACK.md               # Libraries & technical rationale
+│   └── usage_guide.txt             # Example prompts for AI coding agents
+├── .github/
+│   └── workflows/
+│       └── aws-deploy-client.yml   # Client CI/CD build & deploy to AWS ECR/EC2
 ├── client/                         # Frontend React 19 application
 │   ├── public/                     # Static public assets
 │   ├── src/
@@ -75,33 +81,40 @@ RTSP-Video-Stream-Viewer/
 │   │   │   ├── StreamCard/         # StreamCard.tsx
 │   │   │   └── StreamPlayer/       # StreamPlayer.tsx
 │   │   ├── config/                 # env.ts (ENV.EXPRESS_URL, ENV.WS_URL)
+│   │   ├── constants/              # presets.ts (DEFAULT_STREAMS)
 │   │   ├── hooks/                  # Custom React hooks (e.g., useApi.ts)
 │   │   ├── icons/                  # SVG icon components (icons.tsx)
 │   │   ├── services/               # api.ts (axios), apiHandler.ts, socketService.ts
 │   │   ├── store/                  # AppStore.ts (MobX singleton)
 │   │   ├── types/                  # index.ts (Stream, StreamStatus, Tab, etc.)
+│   │   ├── utils/                  # error.ts (extractErrorMessage), url.ts (isValidStreamUrl)
 │   │   ├── App.css                 # Global styles, variables, reset, BEM classes
 │   │   ├── App.tsx                 # App layout & root composition
 │   │   ├── main.tsx                # Client entry point
 │   │   └── vite-env.d.ts           # Vite client type definitions
+│   ├── .dockerignore               # Docker ignore rules for client build
 │   ├── .env                        # Local client environment
 │   ├── .env.example                # Example client environment
+│   ├── Dockerfile                  # Multi-stage production container build (serve)
 │   ├── eslint.config.js            # ESLint flat configuration
 │   ├── index.html                  # HTML template
 │   ├── package.json                # Client dependencies & scripts
+│   ├── README.md                   # Client documentation
 │   ├── tsconfig.json               # TypeScript project reference root
 │   ├── tsconfig.app.json           # Client app compiler configuration
 │   └── vite.config.ts              # Vite configuration
 ├── server/                         # Backend Express + Socket.IO server
+│   ├── logs/                       # Daily rotational logs (combined-*.log, error-*.log)
 │   ├── src/
 │   │   ├── routes/                 # Express route modules (health.ts, streams.ts)
-│   │   ├── services/               # streamManager.ts, socketService.ts
+│   │   ├── services/               # logger.ts, streamManager.ts, socketService.ts
 │   │   ├── types/                  # stream.ts (StreamItem, DTO interfaces)
 │   │   └── index.ts                # Express app, server bootstrap & shutdown
 │   ├── .env                        # Local server environment
 │   ├── .env.example                # Example server environment
 │   ├── nodemon.json                # Nodemon dev watcher config
 │   ├── package.json                # Server dependencies & scripts
+│   ├── README.md                   # Server documentation
 │   └── tsconfig.json               # Server TypeScript compiler config
 └── custom-video-streamer/          # Mock RTSP Streaming Infrastructure
     ├── mediamtx/                   # mediamtx.yml configuration

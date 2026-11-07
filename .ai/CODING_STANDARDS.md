@@ -18,17 +18,20 @@ RTSP-Video-Stream-Viewer/
 │   │   │   ├── layout/          # Global layout scaffolding (Topbar, Sidebar, MainContent)
 │   │   │   └── <ComponentName>/ # Feature component folders containing <ComponentName>.tsx
 │   │   ├── config/              # Environment config and constants (env.ts)
+│   │   ├── constants/           # Preset configs (presets.ts)
 │   │   ├── hooks/               # Custom React hooks (useApi.ts)
 │   │   ├── icons/               # SVG icon definitions (icons.tsx)
 │   │   ├── services/            # Axios instance, typed handlers, and Socket client
 │   │   ├── store/               # MobX singleton store (AppStore.ts)
 │   │   ├── types/               # Shared TypeScript models and DTO interfaces
+│   │   ├── utils/               # Helper utilities (error.ts, url.ts)
 │   │   ├── App.css              # Global styles, CSS variables, and layout classes
 │   │   └── App.tsx              # Root component
 ├── server/
+│   ├── logs/                    # Rotational log files (combined-*.log, error-*.log)
 │   ├── src/
 │   │   ├── routes/              # Express Routers (streams.ts, health.ts)
-│   │   ├── services/            # Core backend logic (streamManager.ts, socketService.ts)
+│   │   ├── services/            # Core backend logic (logger.ts, streamManager.ts, socketService.ts)
 │   │   ├── types/               # Backend DTOs and entity interfaces (stream.ts)
 │   │   └── index.ts             # Express and Socket.IO entry point
 ```
@@ -106,4 +109,21 @@ In `StreamPlayer.tsx`, avoid re-rendering React trees on every frame:
 - REST API calls are wrapped in `try / catch` blocks.
 - Failed stream connections surface visual error overlays in the player card with actionable buttons ("Reconnect Stream").
 - Form validations surface dismissible error banners in `AddStreamModal`.
+
+---
+
+## 6. Logging Standards
+
+### Server Logging
+- Use the shared `logger` singleton from `server/src/services/logger.ts` instead of `console.log`:
+  ```typescript
+  import { logger } from '../services/logger';
+
+  logger.info('StreamManager', `Starting stream ${stream.id}`);
+  logger.error('StreamManager', `FFmpeg crashed for stream ${stream.id}`, error);
+  logger.warn('Router', `Endpoint not found: ${req.method} ${req.originalUrl}`);
+  logger.debug('Socket', `Client connected: ${socket.id}`);
+  ```
+- Always provide a clear module tag as the first parameter (`'Server'`, `'StreamManager'`, `'Socket'`, `'Router'`, `'Security'`, etc.).
+- Never log raw, unredacted credentials. The logger's internal `sanitize()` method strips passwords from URLs and auth tokens automatically.
 

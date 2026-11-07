@@ -25,6 +25,8 @@ Browsers cannot natively render RTSP or raw RTP/H.264 streams via standard HTML5
 - **Sidebar Stream Filtering**: Quick toggle between "Active" and "All Streams" tabs with direct activate/deactivate toggles.
 - **Theme Customization**: Global observable Dark and Light mode toggling.
 - **Health Check & Diagnostics**: REST endpoint reporting server health, process uptime, and active stream metrics.
+- **Enterprise Winston Logging**: Daily rotating log files (`combined-*.log`, `error-*.log`), request timing logs, credential redaction, and protected log access middleware.
+- **Containerization & CI/CD**: Client multi-stage Docker build (`client/Dockerfile`) and GitHub Actions workflow deploying to AWS ECR and EC2.
 
 ## 5. Current Implementation Status
 - **Status**: Functional prototype / MVP developed as a full-stack engineering solution (originally inspired by the Skylark Labs Full-Stack Engineer assessment).
@@ -32,5 +34,5 @@ Browsers cannot natively render RTSP or raw RTP/H.264 streams via standard HTML5
 - **Transcoding Engine**: Real-time server-side FFmpeg transcoding to MJPEG over pipe stdout.
 - **Transport**: Socket.IO binary frame broadcasting over dedicated stream rooms (`stream:${id}`).
 - **Local Relay Environment**: Docker Compose stack running MediaMTX and 3 FFmpeg infinite MP4 loop publishers.
-- **Deployment Status**: Configured for local development. Cloud deployment configurations (e.g., Dockerfiles for client/server or Helm/K8s manifests) are not yet implemented.
+- **Deployment Status**: Configured for local development with client Docker containerization and AWS ECR/EC2 deployment pipeline ([`.github/workflows/aws-deploy-client.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/.github/workflows/aws-deploy-client.yml)). Dedicated backend containerization is planned.
 

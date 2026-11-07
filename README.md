@@ -10,10 +10,29 @@ The repository includes a **React + Vite** frontend with **MobX** state manageme
 
 ```
 RTSP-Video-Stream-Viewer/
+├── .ai/                             # AI knowledge base, rules & documentation
+│   ├── AI_RULES.md                  # Permanent coding & operational rules
+│   ├── AI_TASK_PROMPT.md            # Phased prompt template for AI tasks
+│   ├── API.md                       # REST API & Socket.IO specifications
+│   ├── ARCHITECTURE.md              # System design & video pipeline
+│   ├── CODING_STANDARDS.md          # Coding style & implementation patterns
+│   ├── DATABASE.md                  # In-memory data schema & roadmap
+│   ├── DEVELOPMENT.md               # Setup, scripts, and deployment guide
+│   ├── FEATURES.md                  # Feature inventory & implementation map
+│   ├── NEW_FEATURE_PROMPT.md        # Prompt template for new features
+│   ├── PROJECT.md                   # Purpose, use cases & scope
+│   ├── SECURITY.md                  # Security posture & threat analysis
+│   ├── TECH_STACK.md                # Dependencies & technology rationale
+│   └── usage_guide.txt              # Example prompts for AI assistants
+│
+├── .github/
+│   └── workflows/
+│       └── aws-deploy-client.yml    # CI/CD pipeline for client on AWS ECR/EC2
+│
 ├── client/                          # React + TypeScript frontend (Vite)
 │   ├── public/
 │   ├── src/
-│   │   ├── assets/
+│   │   ├── assets/                  # Media assets (hero.png, svgs)
 │   │   ├── components/
 │   │   │   ├── layout/
 │   │   │   │   ├── Topbar.tsx       # Top navigation bar with theme toggle
@@ -22,37 +41,47 @@ RTSP-Video-Stream-Viewer/
 │   │   │   ├── StreamCard/
 │   │   │   │   └── StreamCard.tsx   # Sidebar stream item (activate / delete)
 │   │   │   ├── StreamPlayer/
-│   │   │   │   └── StreamPlayer.tsx # Video player card with fullscreen, PiP, reload
+│   │   │   │   └── StreamPlayer.tsx # Canvas video player with FPS, PiP, fullscreen
 │   │   │   └── AddStreamModal/
-│   │   │       └── AddStreamModal.tsx # Modal dialog to register new streams
-│   │   ├── icons/
-│   │   │   └── icons.tsx            # Inline SVG icons
-│   │   ├── store/
-│   │   │   └── AppStore.ts          # MobX singleton store (streams, theme, modal)
-│   │   ├── types/
-│   │   │   └── index.ts             # Shared TypeScript interfaces (Stream, Tab)
+│   │   │       └── AddStreamModal.tsx # Modal dialog to register streams or presets
+│   │   ├── config/                  # env.ts (environment variables)
+│   │   ├── constants/               # presets.ts (MediaMTX test presets)
+│   │   ├── hooks/                   # useApi.ts custom hook
+│   │   ├── icons/                   # icons.tsx (inline SVG icons)
+│   │   ├── services/                # api.ts, apiHandler.ts, socketService.ts
+│   │   ├── store/                   # AppStore.ts (MobX central singleton)
+│   │   ├── types/                   # index.ts (TypeScript interfaces)
+│   │   ├── utils/                   # error.ts, url.ts
 │   │   ├── App.tsx
 │   │   ├── App.css
 │   │   ├── main.tsx
 │   │   └── index.css
+│   ├── Dockerfile                   # Multi-stage production container build
+│   ├── .dockerignore
 │   ├── index.html
 │   ├── vite.config.ts
 │   ├── tsconfig.json
 │   ├── package.json
-│   └── README.md
+│   └── README.md                    # Client documentation
 │
 ├── server/                          # Node.js + TypeScript backend (Express + Socket.IO)
+│   ├── logs/                        # Rotational logs (combined-*.log, error-*.log)
 │   ├── src/
 │   │   ├── routes/
 │   │   │   ├── health.ts            # Server health check (/api/health)
 │   │   │   └── streams.ts           # Stream API endpoints (/api/streams)
 │   │   ├── services/
-│   │   │   └── socketService.ts     # Socket.IO connection and event handlers
-│   │   └── index.ts                 # Express app initialization & HTTP/WS server listener
+│   │   │   ├── logger.ts            # Winston logger & protection middleware
+│   │   │   ├── socketService.ts     # Socket.IO connection & event handlers
+│   │   │   └── streamManager.ts     # FFmpeg child process & MJPEG demuxer
+│   │   ├── types/
+│   │   │   └── stream.ts            # TypeScript interfaces (StreamItem, DTOs)
+│   │   └── index.ts                 # Express app initialization & server listener
 │   ├── .env.example                 # Environment variables template
 │   ├── nodemon.json                 # Hot-reloading configuration
 │   ├── tsconfig.json                # TypeScript compiler configuration
-│   └── package.json
+│   ├── package.json
+│   └── README.md                    # Server documentation
 │
 ├── custom-video-streamer/           # Local RTSP test stream environment (Docker)
 │   ├── docker-compose.yml           # MediaMTX RTSP relay + 3 FFmpeg video publishers
@@ -77,9 +106,10 @@ RTSP-Video-Stream-Viewer/
 | **State Management** | MobX 7 + mobx-react-lite 5 | Reactive observable singleton pattern |
 | **Backend** | Node.js, Express 4.21, TypeScript | REST API service with modular routing |
 | **Real-Time** | Socket.IO 4.8 | Bidirectional event-driven communication |
+| **Logging** | Winston 3.19 + winston-daily-rotate-file | Structured file/console logging with daily rotation & credential masking |
 | **Stream Server** | MediaMTX (`bluenviron/mediamtx`) | Zero-dependency RTSP/HLS/WebRTC streaming relay |
 | **Transcoder / Feeds** | FFmpeg (`linuxserver/ffmpeg`) | Generates infinite live RTSP test loops in Docker |
-| **Dev Tools** | nodemon, ts-node, ESLint 10, Docker Compose | Rapid local development and testing |
+| **Dev & CI/CD Tools** | nodemon, ts-node, ESLint 10, Docker, GitHub Actions | Local development and automated AWS deployment pipeline |
 
 ---
 
@@ -93,6 +123,8 @@ RTSP-Video-Stream-Viewer/
 - 🟩 **Responsive Player Grid**: Dynamically adapts from single-camera focus to multi-stream 2-column layouts.
 - ▶️ **Per-Player Controls**: Fullscreen mode, Picture-in-Picture (PiP), stream reload, settings, and one-click dismiss.
 - 🌙 **Theme Support**: Seamless Dark and Light theme switching with app-wide observable styling.
+- 📝 **Structured Winston Logging**: Production-grade daily rotating logs (`combined-*.log`, `error-*.log`), request timing middleware, log protection (`403 Forbidden` for direct `/logs` access), and automatic credential masking.
+- 🚀 **Docker & AWS Deployment**: Containerized client Dockerfile and GitHub Actions workflow targeting AWS ECR and EC2.
 - 🔒 **End-to-End TypeScript**: Strict typing across both client and server source files.
 
 ---

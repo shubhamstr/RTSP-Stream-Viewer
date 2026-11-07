@@ -66,6 +66,10 @@ flowchart TB
 - [`client/src/main.tsx`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/main.tsx): Client bootstrap into DOM.
 - [`client/src/App.tsx`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/App.tsx): Root application layout; toggles theme class and renders Topbar, Sidebar, MainContent, and AddStreamModal.
 - [`client/src/store/AppStore.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/store/AppStore.ts): Central MobX singleton managing streams list, UI active tab, modal visibility, and theme state. Initializes socket listeners and triggers REST actions.
+- [`client/src/constants/presets.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/constants/presets.ts): Default preset streams for testing with MediaMTX.
+- [`client/src/utils/`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/utils/):
+  - `error.ts`: `extractErrorMessage` utility for consistent Axios error message extraction.
+  - `url.ts`: `isValidStreamUrl` validation helper for protocol checks (`rtsp://`, `rtsps://`, `http://`, `https://`).
 - [`client/src/components/layout/`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/components/layout/):
   - `Topbar.tsx`: Branding and theme toggle (Dark/Light).
   - `Sidebar.tsx`: Stream tab filters (`active` vs `all`) and list of `StreamCard` items.
@@ -78,14 +82,19 @@ flowchart TB
   - `apiHandler.ts`: Typed API helper functions for streams and health checks.
   - `socketService.ts`: Socket.IO client singleton factory (`getSocket()`).
 - [`client/src/config/env.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/src/config/env.ts): Client configuration reading `VITE_API_URL` and `VITE_WS_URL`.
+- [`client/Dockerfile`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/Dockerfile): Multi-stage container definition compiling the React application with `node:20-alpine` and serving the production bundle with `serve` on port 5001.
 
 ### Backend (`/server`)
-- [`server/src/index.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/index.ts): Initializes Express, HTTP server, CORS policies, Socket.IO instance, route mounting, and process signal handlers (`SIGINT`, `SIGTERM`).
+- [`server/src/index.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/index.ts): Initializes Express, HTTP server, CORS policies, Socket.IO instance, route mounting, security and logging middleware, and process signal handlers (`SIGINT`, `SIGTERM`).
 - [`server/src/routes/health.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/routes/health.ts): Health endpoint returning process uptime and timestamp.
 - [`server/src/routes/streams.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/routes/streams.ts): REST endpoints for stream CRUD and play/pause controls.
+- [`server/src/services/logger.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/services/logger.ts): Enterprise Winston logger with daily file rotation (`winston-daily-rotate-file`), console colorization, credential redaction (`sanitize()`), HTTP request logging middleware (`requestLoggerMiddleware`), and log protection middleware (`protectLogsMiddleware`).
 - [`server/src/services/streamManager.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/services/streamManager.ts): Core streaming orchestrator. Manages `Map<string, StreamItem>` and `Map<string, ActiveProcess>`, executes FFmpeg child processes, splits stdout into discrete JPEG frames, and dispatches frames/status to Socket.IO rooms.
 - [`server/src/services/socketService.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/services/socketService.ts): Sets up Socket.IO events (`stream:join`, `stream:leave`, `stream:start`, `stream:stop`, `ping`).
 - [`server/src/types/stream.ts`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/server/src/types/stream.ts): Backend TypeScript interfaces (`StreamItem`, `StreamStatus`, `CreateStreamDto`, `UpdateStreamDto`).
+
+### CI/CD & Cloud Deployment (`/.github/workflows`)
+- [`.github/workflows/aws-deploy-client.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/.github/workflows/aws-deploy-client.yml): Automated GitHub Actions pipeline triggered via `workflow_dispatch` to build the client Docker image, publish to Amazon ECR, and deploy to an AWS EC2 instance via SSH.
 
 ### Streaming Ingestion (`/custom-video-streamer`)
 - [`custom-video-streamer/docker-compose.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/custom-video-streamer/docker-compose.yml): Runs `mediamtx` container and 3 FFmpeg containers (`ffmpeg-earth`, `ffmpeg-road-and-trees`, `ffmpeg-watering-plant`).
@@ -150,6 +159,7 @@ In [`server/src/services/streamManager.ts`](file:///w:/shubham/personal/RTSP-Vid
 | **Server ↔ Transcoder** | Process Standard I/O | OS Pipe (`spawn`) | Internal | Node.js spawns FFmpeg binary and reads stdout |
 | **Transcoder ↔ RTSP Server** | Network Stream | RTSP over TCP | `8554` (Default MediaMTX) | FFmpeg consumes remote or local video feeds |
 | **Local Test Streamer** | Docker Compose | Docker Bridge Network | `8554` (RTSP), `8888` (HLS), `9997` (API) | MediaMTX relay with 3 infinite loop FFmpeg feeds |
+| **Client Deployment (Cloud)** | Docker Container on EC2 | HTTP | `5001` (Container) / Host Port | Client app compiled and served via Docker on AWS EC2 |
 
 ---
 

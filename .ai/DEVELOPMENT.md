@@ -78,6 +78,11 @@ npm run dev
 | `PORT` | `4000` | Port for Express HTTP listener and Socket.IO server. |
 | `CLIENT_ORIGIN` | `http://localhost:5173` | Allowed frontend origin for CORS policies. |
 | `FFMPEG_PATH` | *Unset* | Optional absolute path to a custom FFmpeg binary. If omitted, falls back to `ffmpeg-static` or system `ffmpeg`. |
+| `LOG_LEVEL` | `debug` | Minimum logging severity (`debug`, `info`, `warn`, `error`). |
+| `LOGS_DIR` | `./logs` | Directory path where rotational log files are written. |
+| `LOG_MAX_FILES` | `14d` | Log retention window before automated purging (e.g. `14d`). |
+| `LOG_MAX_SIZE` | `20m` | Maximum individual log file size before triggering rotation. |
+| `LOG_ZIPPED_ARCHIVE` | `false` | Whether to gzip archived rotated log files (`true` / `false`). |
 
 ### Frontend (`client/.env`)
 | Variable | Default Value | Description |
@@ -127,12 +132,14 @@ npm run dev
 
 ## 6. Deployment Considerations (Production Readiness)
 
-1. **Backend Deployment**:
+1. **Frontend Deployment & CI/CD**:
+   - Containerized with [`client/Dockerfile`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/client/Dockerfile) using a multi-stage `node:20-alpine` build served via `serve` on port `5001`.
+   - Automated deployment pipeline configured in [`.github/workflows/aws-deploy-client.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/.github/workflows/aws-deploy-client.yml): builds and pushes Docker image to Amazon ECR, then executes SSH commands on target AWS EC2 host to restart the container.
+   - Alternatively, can be statically hosted on Vercel, Netlify, Cloudflare Pages, or AWS S3 + CloudFront.
+   - Configure `VITE_API_URL` and `VITE_WS_URL` to point to the deployed backend domain.
+2. **Backend Deployment**:
    - Requires an environment supporting persistent OS child processes and WebSockets (e.g., Render Background Worker/Web Service, Railway, AWS ECS, or DigitalOcean Droplet).
    - Serverless platforms (e.g., AWS Lambda, Vercel Serverless Functions) **cannot** run persistent FFmpeg streaming or long-lived WebSockets.
-2. **Frontend Deployment**:
-   - Can be statically hosted on Vercel, Netlify, Cloudflare Pages, or AWS S3 + CloudFront.
-   - Configure `VITE_API_URL` and `VITE_WS_URL` to point to the deployed backend domain.
 3. **Containerization**:
-   - Creating a root `Dockerfile` for the Node.js backend with FFmpeg installed via Alpine/Debian package manager is recommended for consistent containerized deployments.
+   - Creating a root `Dockerfile` for the Node.js backend with FFmpeg installed via Alpine/Debian package manager is recommended for consistent containerized deployments alongside the client container.
 

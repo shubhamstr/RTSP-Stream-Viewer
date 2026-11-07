@@ -46,7 +46,18 @@
 
 ---
 
-## 4. Rationale for Core Architectural Choices
+## 4. Cloud Deployment & CI/CD Infrastructure
+
+| Technology | Version / Action | Purpose & Rationale |
+|---|---|---|
+| **Docker** | Multi-stage (`node:20-alpine`) | Builds and containerizes the frontend React app in `client/Dockerfile`, served efficiently via `serve` on port 5001. |
+| **GitHub Actions** | `v4` runners | Orchestrates CI/CD workflow defined in `.github/workflows/aws-deploy-client.yml`. |
+| **Amazon ECR** | AWS Managed Registry | Stores versioned and tagged (`latest`, git SHA) Docker container images. |
+| **Amazon EC2** | AWS Compute | Hosts the deployed client container image via SSH automated commands (`appleboy/ssh-action`). |
+
+---
+
+## 5. Rationale for Core Architectural Choices
 
 1. **Why MobX over Redux / Zustand?**
    - Stream state involves high-frequency status toggles and reactive computed properties (`listedStreams`, `displayedStreams`). MobX's `makeAutoObservable` minimizes boilerplate and eliminates unnecessary re-renders via fine-grained component subscription.
