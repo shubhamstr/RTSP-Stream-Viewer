@@ -50,10 +50,10 @@
 
 | Technology | Version / Action | Purpose & Rationale |
 |---|---|---|
-| **Docker** | Multi-stage (`node:20-alpine`) | Builds and containerizes the frontend React app in `client/Dockerfile`, served efficiently via `serve` on port 5001. |
-| **GitHub Actions** | `v4` runners | Orchestrates CI/CD workflow defined in `.github/workflows/aws-deploy-client.yml`. |
-| **Amazon ECR** | AWS Managed Registry | Stores versioned and tagged (`latest`, git SHA) Docker container images. |
-| **Amazon EC2** | AWS Compute | Hosts the deployed client container image via SSH automated commands (`appleboy/ssh-action`). |
+| **Docker** | Multi-stage (`node:20-alpine` / `alpine:3.20`) | Builds and containerizes the frontend client (`client/Dockerfile`) and custom video streamer (`custom-video-streamer/Dockerfile`). |
+| **GitHub Actions** | `v4` runners | Orchestrates manual CI/CD workflows defined in `.github/workflows/aws-deploy-client.yml` and `.github/workflows/aws-deploy-custom-video-streamer.yml`. |
+| **Amazon ECR** | AWS Managed Registry | Stores versioned and tagged (`latest`, git SHA) Docker container images for client and streamer. |
+| **Amazon EC2** | AWS Compute | Hosts deployed client and custom video streamer containers via SSH automated commands (`appleboy/ssh-action`). |
 
 ---
 

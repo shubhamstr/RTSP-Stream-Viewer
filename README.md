@@ -27,7 +27,8 @@ RTSP-Video-Stream-Viewer/
 │
 ├── .github/
 │   └── workflows/
-│       └── aws-deploy-client.yml    # CI/CD pipeline for client on AWS ECR/EC2
+│       ├── aws-deploy-client.yml    # CI/CD pipeline for client on AWS ECR/EC2
+│       └── aws-deploy-custom-video-streamer.yml # CI/CD pipeline for streamer on AWS ECR/EC2
 │
 ├── client/                          # React + TypeScript frontend (Vite)
 │   ├── public/
@@ -83,14 +84,18 @@ RTSP-Video-Stream-Viewer/
 │   ├── package.json
 │   └── README.md                    # Server documentation
 │
-├── custom-video-streamer/           # Local RTSP test stream environment (Docker)
+├── custom-video-streamer/           # RTSP test stream environment & container (Docker)
+│   ├── Dockerfile                   # Standalone container build (MediaMTX + FFmpeg + videos)
+│   ├── docker-entrypoint.sh         # Entrypoint script launching relay & stream publishers
+│   ├── .dockerignore
 │   ├── docker-compose.yml           # MediaMTX RTSP relay + 3 FFmpeg video publishers
 │   ├── mediamtx/
 │   │   └── mediamtx.yml             # MediaMTX configuration (RTSP, HLS, WebRTC, API)
 │   ├── scripts/
 │   │   ├── start.bat / start.sh     # Quick start scripts (Windows & Unix)
 │   │   └── stop.bat / stop.sh       # Stop scripts (Windows & Unix)
-│   └── README.md                    # Streamer documentation & sample URLs
+│   ├── videos/                      # Looping test MP4 video files
+│   └── README.md                    # Streamer documentation & deployment instructions
 │
 ├── Skylark Labs - Full Stack Engineer Coding Test.pdf
 └── README.md

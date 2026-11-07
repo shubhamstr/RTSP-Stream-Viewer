@@ -96,11 +96,64 @@ docker compose logs -f mediamtx
 
 ---
 
+## 🐳 Standalone Docker Container
+
+In addition to docker-compose, the streamer can be built and run as a single, self-contained Docker container:
+
+```bash
+# Build image
+docker build -t custom-video-streamer .
+
+# Run container
+docker run -d \
+  --name custom-video-streamer \
+  --restart always \
+  -p 8554:8554 \
+  -p 8888:8888 \
+  -p 9997:9997 \
+  custom-video-streamer
+```
+
+---
+
+## ☁️ AWS ECR & EC2 Deployment Pipeline
+
+A dedicated GitHub Actions workflow is provided for manual deployment:
+[`.github/workflows/aws-deploy-custom-video-streamer.yml`](../.github/workflows/aws-deploy-custom-video-streamer.yml)
+
+### Deployment Steps:
+1. Navigate to **GitHub Actions** > **Build and Deploy Custom Video Streamer to AWS ECR and EC2**.
+2. Click **Run workflow** (workflow dispatch).
+3. The pipeline will:
+   - Authenticate with Amazon ECR via GitHub Secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`).
+   - Build the Docker image from `custom-video-streamer/Dockerfile` and push tags (`:latest` and `:<git-sha>`).
+   - SSH into the EC2 instance using `EC2_SSH_KEY`.
+   - Pull the latest image from ECR, stop any running container, and start `custom-video-streamer` on ports `8554`, `8888`, and `9997`.
+
+### Required GitHub Secrets & Variables:
+- **Secrets**:
+  - `AWS_ACCESS_KEY_ID`: AWS IAM user access key with ECR access.
+  - `AWS_SECRET_ACCESS_KEY`: AWS IAM user secret key.
+  - `EC2_SSH_KEY`: Private SSH key for the EC2 host.
+  - `EC2_HOST`: IP address or DNS hostname of your EC2 instance (can also be a variable).
+  - `EC2_USERNAME`: SSH username (e.g., `ubuntu` or `ec2-user`).
+- **Variables** (Optional, default fallbacks provided):
+  - `AWS_REGION`: Target region (default: `us-east-1`).
+  - `ECR_REPOSITORY_STREAMER`: ECR repo name (default: `custom-video-streamer`).
+  - `STREAMER_RTSP_PORT`: Host port for RTSP (default: `8554`).
+  - `STREAMER_HLS_PORT`: Host port for HLS (default: `8888`).
+  - `STREAMER_API_PORT`: Host port for REST API (default: `9997`).
+
+---
+
 ## 🗂️ Folder Structure
 
 ```
 custom-video-streamer/
-├── docker-compose.yml        # Defines all 4 services + bridge network
+├── Dockerfile                # Production multi-stage Dockerfile (MediaMTX + FFmpeg + videos)
+├── docker-entrypoint.sh      # Container entrypoint launching MediaMTX & stream publishers
+├── .dockerignore             # Docker build context exclusion rules
+├── docker-compose.yml        # Multi-container Compose stack for local development
 ├── mediamtx/
 │   └── mediamtx.yml          # MediaMTX server configuration
 ├── scripts/
@@ -108,6 +161,7 @@ custom-video-streamer/
 │   ├── start.bat             # Windows start script
 │   ├── stop.sh               # Linux/macOS stop script
 │   └── stop.bat              # Windows stop script
+├── videos/                   # Sample loop video files (earth.mp4, road_and_trees.mp4, watering_plant.mp4)
 └── README.md
 ```
 

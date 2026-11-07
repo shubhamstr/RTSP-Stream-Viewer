@@ -137,9 +137,13 @@ npm run dev
    - Automated deployment pipeline configured in [`.github/workflows/aws-deploy-client.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/.github/workflows/aws-deploy-client.yml): builds and pushes Docker image to Amazon ECR, then executes SSH commands on target AWS EC2 host to restart the container.
    - Alternatively, can be statically hosted on Vercel, Netlify, Cloudflare Pages, or AWS S3 + CloudFront.
    - Configure `VITE_API_URL` and `VITE_WS_URL` to point to the deployed backend domain.
-2. **Backend Deployment**:
+2. **Custom Video Streamer Deployment & CI/CD**:
+   - Containerized with [`custom-video-streamer/Dockerfile`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/custom-video-streamer/Dockerfile) using a multi-stage build combining `bluenviron/mediamtx:latest` binary, Alpine Linux, and FFmpeg.
+   - Continuous stream loops managed by [`custom-video-streamer/docker-entrypoint.sh`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/custom-video-streamer/docker-entrypoint.sh) for `earth`, `road_and_trees`, and `watering_plant`.
+   - Automated deployment pipeline configured in [`.github/workflows/aws-deploy-custom-video-streamer.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/.github/workflows/aws-deploy-custom-video-streamer.yml): triggered manually via `workflow_dispatch`, builds and pushes Docker image to Amazon ECR (`custom-video-streamer`), then logs in and restarts the container on AWS EC2 exposing RTSP (`8554`), HLS (`8888`), and REST API (`9997`).
+3. **Backend Deployment**:
    - Requires an environment supporting persistent OS child processes and WebSockets (e.g., Render Background Worker/Web Service, Railway, AWS ECS, or DigitalOcean Droplet).
    - Serverless platforms (e.g., AWS Lambda, Vercel Serverless Functions) **cannot** run persistent FFmpeg streaming or long-lived WebSockets.
-3. **Containerization**:
+4. **Containerization**:
    - Creating a root `Dockerfile` for the Node.js backend with FFmpeg installed via Alpine/Debian package manager is recommended for consistent containerized deployments alongside the client container.
 

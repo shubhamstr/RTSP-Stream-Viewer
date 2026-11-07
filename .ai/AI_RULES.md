@@ -70,7 +70,8 @@ RTSP-Video-Stream-Viewer/
 │   └── usage_guide.txt             # Example prompts for AI coding agents
 ├── .github/
 │   └── workflows/
-│       └── aws-deploy-client.yml   # Client CI/CD build & deploy to AWS ECR/EC2
+│       ├── aws-deploy-client.yml   # Client CI/CD build & deploy to AWS ECR/EC2
+│       └── aws-deploy-custom-video-streamer.yml # Streamer CI/CD build & deploy to AWS ECR/EC2
 ├── client/                         # Frontend React 19 application
 │   ├── public/                     # Static public assets
 │   ├── src/
@@ -116,12 +117,15 @@ RTSP-Video-Stream-Viewer/
 │   ├── package.json                # Server dependencies & scripts
 │   ├── README.md                   # Server documentation
 │   └── tsconfig.json               # Server TypeScript compiler config
-└── custom-video-streamer/          # Mock RTSP Streaming Infrastructure
+└── custom-video-streamer/          # RTSP Streaming Infrastructure
+    ├── Dockerfile                  # Standalone production container (MediaMTX + FFmpeg + videos)
+    ├── docker-entrypoint.sh        # Startup script for MediaMTX relay & continuous stream loops
+    ├── .dockerignore               # Docker context exclusion rules
     ├── mediamtx/                   # mediamtx.yml configuration
     ├── scripts/                    # start.bat, start.sh, stop.bat, stop.sh
     ├── videos/                     # Looping test MP4 video files
     ├── docker-compose.yml          # Container topology (MediaMTX + 3 FFmpeg feeds)
-    └── README.md                   # Setup guide for streaming sandbox
+    └── README.md                   # Setup guide for streaming sandbox & deployment
 ```
 
 ### `[Recommended Improvement]`

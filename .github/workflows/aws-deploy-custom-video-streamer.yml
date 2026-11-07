@@ -1,0 +1,98 @@
+name: Build and Deploy Custom Video Streamer to AWS ECR and EC2
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'custom-video-streamer/**'
+  #     - '.github/workflows/aws-deploy-custom-video-streamer.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    name: Build and Push Custom Video Streamer Image to ECR
+    runs-on: ubuntu-latest
+    outputs:
+      registry: ${{ steps.login-ecr.outputs.registry }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Custom Video Streamer Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./custom-video-streamer
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY_STREAMER || 'custom-video-streamer' }}:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY_STREAMER || 'custom-video-streamer' }}:${{ github.sha }}
+
+  deploy:
+    name: Deploy Custom Video Streamer to AWS EC2
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Get ECR login token
+        id: ecr-token
+        run: |
+          TOKEN=$(aws ecr get-login-password --region ${{ vars.AWS_REGION || 'us-east-1' }})
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Execute deployment via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          ECR_PASSWORD: ${{ steps.ecr-token.outputs.token }}
+          REGISTRY: ${{ needs.build-and-push.outputs.registry }}
+          IMAGE_NAME: ${{ vars.ECR_REPOSITORY_STREAMER || 'custom-video-streamer' }}
+          RTSP_PORT: ${{ vars.STREAMER_RTSP_PORT || '8554' }}
+          HLS_PORT: ${{ vars.STREAMER_HLS_PORT || '8888' }}
+          API_PORT: ${{ vars.STREAMER_API_PORT || '9997' }}
+        with:
+          host: ${{ vars.EC2_HOST || secrets.EC2_HOST }}
+          username: ${{ vars.EC2_USERNAME || secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: ECR_PASSWORD,REGISTRY,IMAGE_NAME,RTSP_PORT,HLS_PORT,API_PORT
+          script: |
+            # Authenticate Docker to Amazon ECR on EC2
+            echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $REGISTRY
+
+            # Pull the latest image
+            docker pull $REGISTRY/$IMAGE_NAME:latest
+
+            # Stop and remove existing container if running
+            docker rm -f custom-video-streamer || true
+
+            # Run custom video streamer container with port mappings:
+            # 8554 (RTSP), 8888 (HLS), 9997 (MediaMTX REST API)
+            docker run -d \
+              --name custom-video-streamer \
+              --restart always \
+              -p $RTSP_PORT:8554 \
+              -p $HLS_PORT:8888 \
+              -p $API_PORT:9997 \
+              $REGISTRY/$IMAGE_NAME:latest
+
+            # Verify container status
+            sleep 3
+            docker ps --filter "name=custom-video-streamer"
+

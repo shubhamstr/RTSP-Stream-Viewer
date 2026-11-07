@@ -95,9 +95,12 @@ flowchart TB
 
 ### CI/CD & Cloud Deployment (`/.github/workflows`)
 - [`.github/workflows/aws-deploy-client.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/.github/workflows/aws-deploy-client.yml): Automated GitHub Actions pipeline triggered via `workflow_dispatch` to build the client Docker image, publish to Amazon ECR, and deploy to an AWS EC2 instance via SSH.
+- [`.github/workflows/aws-deploy-custom-video-streamer.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/.github/workflows/aws-deploy-custom-video-streamer.yml): Automated GitHub Actions pipeline triggered via `workflow_dispatch` to build the custom video streamer Docker image (MediaMTX + FFmpeg publishers + loop videos), publish to Amazon ECR, and deploy to an AWS EC2 instance via SSH.
 
 ### Streaming Ingestion (`/custom-video-streamer`)
-- [`custom-video-streamer/docker-compose.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/custom-video-streamer/docker-compose.yml): Runs `mediamtx` container and 3 FFmpeg containers (`ffmpeg-earth`, `ffmpeg-road-and-trees`, `ffmpeg-watering-plant`).
+- [`custom-video-streamer/Dockerfile`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/custom-video-streamer/Dockerfile): Production multi-stage Dockerfile packaging MediaMTX, Alpine Linux, FFmpeg, and sample videos.
+- [`custom-video-streamer/docker-entrypoint.sh`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/custom-video-streamer/docker-entrypoint.sh): Container supervisor running MediaMTX relay and spawning continuous background FFmpeg publishers.
+- [`custom-video-streamer/docker-compose.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/custom-video-streamer/docker-compose.yml): Local development stack running `mediamtx` container and 3 FFmpeg containers (`ffmpeg-earth`, `ffmpeg-road-and-trees`, `ffmpeg-watering-plant`).
 - [`custom-video-streamer/mediamtx/mediamtx.yml`](file:///w:/shubham/personal/RTSP-Video-Stream-Viewer/custom-video-streamer/mediamtx/mediamtx.yml): MediaMTX configuration setting internal users (`viewer`, `publisher`, `apiuser`) and configuring RTSP (8554), HLS (8888), and REST API (9997).
 
 ---
@@ -160,6 +163,7 @@ In [`server/src/services/streamManager.ts`](file:///w:/shubham/personal/RTSP-Vid
 | **Transcoder ↔ RTSP Server** | Network Stream | RTSP over TCP | `8554` (Default MediaMTX) | FFmpeg consumes remote or local video feeds |
 | **Local Test Streamer** | Docker Compose | Docker Bridge Network | `8554` (RTSP), `8888` (HLS), `9997` (API) | MediaMTX relay with 3 infinite loop FFmpeg feeds |
 | **Client Deployment (Cloud)** | Docker Container on EC2 | HTTP | `5001` (Container) / Host Port | Client app compiled and served via Docker on AWS EC2 |
+| **Streamer Deployment (Cloud)** | Docker Container on EC2 | RTSP, HTTP | `8554` (RTSP), `8888` (HLS), `9997` (API) | Custom video streamer image pulled from ECR and run on AWS EC2 |
 
 ---
 
